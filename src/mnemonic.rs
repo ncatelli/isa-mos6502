@@ -1,7 +1,9 @@
 extern crate parcel;
+use crate::Offset;
 
 macro_rules! generate_mnemonic_parser_and_offset {
     ($mnemonic:ty, $opcode:literal) => {
+        impl Offset for $mnemonic {}
 
         impl<'a> parcel::Parser<'a, &'a [u8], $mnemonic> for $mnemonic {
             fn parse(&self, input: &'a [u8]) -> parcel::ParseResult<&'a [u8], $mnemonic> {
@@ -73,7 +75,7 @@ pub struct ADC;
 
 generate_mnemonic_parser_and_offset!(ADC, 0x6d, 0x7d, 0x79, 0x71, 0x69, 0x61, 0x65, 0x75);
 
-/// subtract memory from Accumulator with borrow.
+/// Subtract memory from Accumulator with borrow.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SBC;
 
@@ -179,18 +181,21 @@ pub struct CPY;
 
 generate_mnemonic_parser_and_offset!(CPY, 0xcc, 0xc0, 0xc4);
 
-// Test Bits in Memory with Accumulator.
+/// Test Bits in Memory with Accumulator.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BIT;
 
 generate_mnemonic_parser_and_offset!(BIT, 0x24, 0x2c);
 
 // Branch
+
+/// Branch on carry clear
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BCC;
 
 generate_mnemonic_parser_and_offset!(BCC, 0x90);
 
+/// Branch on carry set
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BCS;
 
@@ -233,31 +238,37 @@ pub struct BVS;
 generate_mnemonic_parser_and_offset!(BVS, 0x70);
 
 // Transfer
+/// Transfer Accumulator to X
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TAX;
 
 generate_mnemonic_parser_and_offset!(TAX, 0xaa);
 
+/// Transfer X to Accumulator
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TXA;
 
 generate_mnemonic_parser_and_offset!(TXA, 0x8a);
 
+/// Transfer Accumulator to Y
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TAY;
 
 generate_mnemonic_parser_and_offset!(TAY, 0xa8);
 
+/// Transfer Y to Accumulator
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TYA;
 
 generate_mnemonic_parser_and_offset!(TYA, 0x98);
 
+/// Transfer Stack Pointer to X
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TSX;
 
 generate_mnemonic_parser_and_offset!(TSX, 0xba);
 
+/// Transfer X to Stack Pointer
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct TXS;
 
@@ -291,8 +302,7 @@ generate_mnemonic_parser_and_offset!(PLP, 0x28);
 
 // Subroutines and Jump
 
-/// Represents a `jmp` instruction, only implemented for the absolute address
-/// and indirect modes and functions as jump to a location in memory.
+/// Jump
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct JMP;
 
@@ -317,36 +327,44 @@ pub struct RTI;
 generate_mnemonic_parser_and_offset!(RTI, 0x40);
 
 // Set and Clear
+
+/// Clear carry
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLC;
 
 generate_mnemonic_parser_and_offset!(CLC, 0xad);
 
+/// Set carry
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SEC;
 
 generate_mnemonic_parser_and_offset!(SEC, 0x38);
 
+/// Clear decimal
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLD;
 
 generate_mnemonic_parser_and_offset!(CLD, 0xd8);
 
+/// Set decimal
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SED;
 
 generate_mnemonic_parser_and_offset!(SED, 0xf8);
 
+/// Clear interrupt disable
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLI;
 
 generate_mnemonic_parser_and_offset!(CLI, 0x58);
 
+/// Set interrupt disable
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SEI;
 
 generate_mnemonic_parser_and_offset!(SEI, 0x78);
 
+/// Clear overflow
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct CLV;
 
@@ -360,8 +378,7 @@ pub struct BRK;
 
 generate_mnemonic_parser_and_offset!(BRK, 0x00);
 
-/// Represents a `nop` instruction, only implemented for the implied address
-/// mode and functions as a "No Instruction".
+/// No operation
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct NOP;
 
