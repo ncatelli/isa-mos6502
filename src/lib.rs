@@ -1,18 +1,21 @@
-pub mod mnemonic;
+#[cfg(test)]
+mod tests;
 
-/// Cyclable represents an object that can take n cycles to process.
+/// CycleCost represents an object that can take n cycles to process.
 /// typically this will be assigned to an instruction.
-pub trait Cyclable {
+pub trait CycleCost {
     fn cycles(&self) -> usize {
         1
     }
 }
 
-/// Offset represents a type that has a byte representable size.
-/// often this will be a fixed sized type like a mnemonic, addressing mode or
-/// instruction.
-pub trait Offset {
-    fn offset(&self) -> usize {
+/// ByteSized represents a type that has a byte representable size. Often this
+/// will be a fixed sized type like a mnemonic, addressing mode or instruction.
+pub trait ByteSized {
+    fn byte_size(&self) -> usize {
         1
     }
 }
+
+pub mod addressing_mode;
+pub mod mnemonic;
