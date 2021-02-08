@@ -1,4 +1,3 @@
-use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
 use std::fmt::Debug;
 
 /// CycleCost represents an object that can take n cycles to process.
@@ -59,23 +58,23 @@ where
 macro_rules! generate_instructions {
     ($($name:ident: $mnemonic:tt, $addressing_mode:tt, $opcode:expr, $cycles:expr,)*) => {
         $(
-            impl CycleCost for Instruction<$mnemonic, $addressing_mode> {
+            impl $crate::CycleCost for Instruction<$mnemonic, $addressing_mode> {
                 fn cycles(&self) -> usize {
                     $cycles
                 }
             }
 
-            impl<'a> Parser<'a, &'a [u8], Instruction<$mnemonic, $addressing_mode>>
-                for Instruction<$mnemonic, $addressing_mode>
+            impl<'a> parcel::Parser<'a, &'a [u8], Instruction<$mnemonic, $addressing_mode>>
+                for crate::Instruction<$mnemonic, $addressing_mode>
             {
                 fn parse(
                     &self,
                     input: &'a [u8],
-                ) -> ParseResult<&'a [u8], Instruction<$mnemonic, $addressing_mode>> {
+                ) -> parcel::ParseResult<&'a [u8], Instruction<$mnemonic, $addressing_mode>> {
                     // If the expected opcode and addressing mode match, map it to a
                     // corresponding Instruction.
                     parcel::map(
-                        parcel::and_then(expect_byte($opcode), |_| <$addressing_mode>::default()),
+                        parcel::and_then(parcel::parsers::byte::expect_byte($opcode), |_| <$addressing_mode>::default()),
                         |am| Instruction::new(<$mnemonic>::default(), am),
                     )
                     .parse(input)
