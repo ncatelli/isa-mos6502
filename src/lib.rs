@@ -1,5 +1,3 @@
-extern crate parcel;
-
 use parcel::{parsers::byte::expect_byte, ParseResult, Parser};
 use std::fmt::Debug;
 
