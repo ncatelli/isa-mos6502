@@ -17,9 +17,7 @@ pub trait ByteSized {
 }
 
 pub mod addressing_mode;
-use addressing_mode::*;
 pub mod mnemonic;
-use mnemonic::*;
 
 /// Instruction represents a single mos6502 instruction, taking a mnemonic and address mode as parameters.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -56,26 +54,26 @@ where
 }
 
 macro_rules! generate_instructions {
-    ($($name:ident: $mnemonic:tt, $addressing_mode:tt, $opcode:expr, $cycles:expr,)*) => {
+    ($($name:ident: $mnc:tt, $am:tt, $opcode:expr, $cycles:expr,)*) => {
         $(
-            impl $crate::CycleCost for Instruction<$mnemonic, $addressing_mode> {
+            impl $crate::CycleCost for Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am> {
                 fn cycles(&self) -> usize {
                     $cycles
                 }
             }
 
-            impl<'a> parcel::Parser<'a, &'a [u8], Instruction<$mnemonic, $addressing_mode>>
-                for crate::Instruction<$mnemonic, $addressing_mode>
+            impl<'a> parcel::Parser<'a, &'a [u8], Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>>
+                for crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>
             {
                 fn parse(
                     &self,
                     input: &'a [u8],
-                ) -> parcel::ParseResult<&'a [u8], Instruction<$mnemonic, $addressing_mode>> {
+                ) -> parcel::ParseResult<&'a [u8], Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> {
                     // If the expected opcode and addressing mode match, map it to a
                     // corresponding Instruction.
                     parcel::map(
-                        parcel::and_then(parcel::parsers::byte::expect_byte($opcode), |_| <$addressing_mode>::default()),
-                        |am| Instruction::new(<$mnemonic>::default(), am),
+                        parcel::and_then(parcel::parsers::byte::expect_byte($opcode), |_| <$crate::addressing_mode::$am>::default()),
+                        |am| Instruction::new(<$crate::mnemonic::$mnc>::default(), am),
                     )
                     .parse(input)
                 }
@@ -84,16 +82,14 @@ macro_rules! generate_instructions {
 
         #[cfg(test)]
         mod tests {
-            use crate::addressing_mode::*;
-            use crate::mnemonic::*;
             use parcel::prelude::v1::Parser;
             $(
                 #[test]
                 fn $name() {
                     let bytecode: [u8; 3] = [$opcode, 0x00, 0x00];
                     assert_eq!(
-                        $crate::Instruction::new(<$mnemonic>::default(), <$addressing_mode>::default()),
-                        $crate::Instruction::new(<$mnemonic>::default(), <$addressing_mode>::default()).parse(&bytecode).unwrap().unwrap()
+                        $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()),
+                        $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()).parse(&bytecode).unwrap().unwrap()
                     )
                 }
             )*
