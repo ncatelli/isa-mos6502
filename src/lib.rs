@@ -102,6 +102,8 @@ macro_rules! generate_instructions {
     };
 }
 
+// represents each instruction in the format of:
+// Parse Test Name, Mnemoic, Addressing Mode, Opcode, Instruction Cycle Count
 #[rustfmt::skip]
 generate_instructions!(
     adc_absolute: ADC, Absolute, 0x6d, 4,
