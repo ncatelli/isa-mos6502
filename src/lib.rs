@@ -1,3 +1,8 @@
+//! This crate stores helper types for all mnemonics and addressing modes for
+//! the MOS6502 ISA. In addition, these types provide helpers for the
+//! translation between the bytecode and an intermediate representation of the
+//! instruction set.
+
 use std::fmt::Debug;
 
 /// CycleCost represents an object that can take n cycles to process.
