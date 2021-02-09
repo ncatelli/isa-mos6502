@@ -16,6 +16,7 @@ macro_rules! generate_mnemonic_parser_and_offset {
     };
 
     ($mnemonic:ty, $( $opcode:literal ),* ) => {
+        impl ByteSized for $mnemonic {}
 
         impl<'a> parcel::Parser<'a, &'a [u8], $mnemonic> for $mnemonic {
             fn parse(&self, input: &'a [u8]) -> parcel::ParseResult<&'a [u8], $mnemonic> {
