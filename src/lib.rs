@@ -31,8 +31,8 @@ where
     M: ByteSized + Copy + Debug + PartialEq,
     A: ByteSized + Copy + Debug + PartialEq,
 {
-    mnemonic: M,
-    addressing_mode: A,
+    pub mnemonic: M,
+    pub addressing_mode: A,
 }
 
 impl<M, A> Instruction<M, A>
