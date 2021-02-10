@@ -60,6 +60,8 @@ where
 
 macro_rules! generate_instructions {
     ($($name:ident: $mnc:tt, $am:tt, $opcode:expr, $cycles:expr,)*) => {
+
+        // For each valid Instruction<Mnemonic, Addressing Mode> pairing
         $(
             impl $crate::CycleCost for Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am> {
                 fn cycles(&self) -> usize {
@@ -83,8 +85,21 @@ macro_rules! generate_instructions {
                     .parse(input)
                 }
             }
+
+            // Covert the addressing mode contests to a little-endian bytecode
+            // vector and chain that to a vector containing the instructions
+            // opcode.
+            impl std::convert::From<Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> for Vec<u8> {
+                fn from(src: Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>) -> Self {
+                    let am_bytecode: Vec<u8> = src.addressing_mode.into();
+                    vec![$opcode].into_iter().chain(
+                        am_bytecode.into_iter()
+                    ).collect()
+                }
+            }
         )*
 
+        // General parser tests
         #[cfg(test)]
         mod tests {
             use parcel::prelude::v1::Parser;
@@ -103,7 +118,7 @@ macro_rules! generate_instructions {
 }
 
 // represents each instruction in the format of:
-// Parse Test Name, Mnemoic, Addressing Mode, Opcode, Instruction Cycle Count
+// Parse Test Name, Mnemonic, Addressing Mode, Opcode, Instruction Cycle Count
 #[rustfmt::skip]
 generate_instructions!(
     adc_absolute: ADC, Absolute, 0x6d, 4,
