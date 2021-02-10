@@ -86,9 +86,15 @@ macro_rules! generate_instructions {
                 }
             }
 
+            // Covert the addressing mode contests to a little-endian bytecode
+            // vector and chain that to a vector containing the instructions
+            // opcode.
             impl std::convert::From<Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> for Vec<u8> {
-                fn from(_: Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>) -> Self {
-                    vec![0]
+                fn from(src: Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>) -> Self {
+                    let am_bytecode: Vec<u8> = src.addressing_mode.into();
+                    vec![$opcode].into_iter().chain(
+                        am_bytecode.into_iter()
+                    ).collect()
                 }
             }
         )*
