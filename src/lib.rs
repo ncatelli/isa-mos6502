@@ -60,6 +60,8 @@ where
 
 macro_rules! generate_instructions {
     ($($name:ident: $mnc:tt, $am:tt, $opcode:expr, $cycles:expr,)*) => {
+
+        // For each valid Instruction<Mnemonic, Addressing Mode> pairing
         $(
             impl $crate::CycleCost for Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am> {
                 fn cycles(&self) -> usize {
@@ -83,8 +85,15 @@ macro_rules! generate_instructions {
                     .parse(input)
                 }
             }
+
+            impl std::convert::From<Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> for Vec<u8> {
+                fn from(_: Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>) -> Self {
+                    vec![0]
+                }
+            }
         )*
 
+        // General parser tests
         #[cfg(test)]
         mod tests {
             use parcel::prelude::v1::Parser;
