@@ -24,6 +24,15 @@ pub trait ByteSized {
 pub mod addressing_mode;
 pub mod mnemonic;
 
+type Bytecode = Vec<u8>;
+
+/// IntoBytecode defines a trait for converting an input to bytecode emitter.
+pub trait IntoBytecode: Sized {
+    type Input: Into<Bytecode>;
+
+    fn into_bytecode(self) -> Bytecode;
+}
+
 /// Instruction represents a single mos6502 instruction, taking a mnemonic and address mode as parameters.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Instruction<M, A>
@@ -89,7 +98,7 @@ macro_rules! generate_instructions {
             // Covert the addressing mode contests to a little-endian bytecode
             // vector and chain that to a vector containing the instructions
             // opcode.
-            impl std::convert::From<Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> for Vec<u8> {
+            impl std::convert::From<Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> for Bytecode {
                 fn from(src: Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>) -> Self {
                     let am_bytecode: Vec<u8> = src.addressing_mode.into();
                     vec![$opcode].into_iter().chain(
@@ -97,22 +106,47 @@ macro_rules! generate_instructions {
                     ).collect()
                 }
             }
+
+            impl IntoBytecode for Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am> {
+                type Input=Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>;
+
+                fn into_bytecode(self) -> Vec<u8> {
+                    self.into()
+                }
+            }
         )*
 
         // General parser tests
         #[cfg(test)]
         mod tests {
-            use parcel::prelude::v1::Parser;
-            $(
-                #[test]
-                fn $name() {
-                    let bytecode: [u8; 3] = [$opcode, 0x00, 0x00];
-                    assert_eq!(
-                        $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()),
-                        $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()).parse(&bytecode).unwrap().unwrap()
-                    )
-                }
-            )*
+            mod parser {
+                use parcel::prelude::v1::Parser;
+                $(
+                    #[test]
+                    fn $name() {
+                        let bytecode: [u8; 3] = [$opcode, 0x00, 0x00];
+                        assert_eq!(
+                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()),
+                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()).parse(&bytecode).unwrap().unwrap()
+                        )
+                    }
+                )*
+            }
+
+            mod bytecode {
+                use $crate::IntoBytecode;
+                $(
+                    #[test]
+                    fn $name() {
+                        let mut bytecode = $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()).into_bytecode();
+                        bytecode.resize(3, 0x00);
+                        assert_eq!(
+                            vec![$opcode, 0x00, 0x00],
+                            bytecode,
+                        )
+                    }
+                )*
+            }
         }
     };
 }
