@@ -41,6 +41,12 @@ impl From<Absolute> for Vec<u8> {
     }
 }
 
+impl From<Absolute> for AddressingMode {
+    fn from(src: Absolute) -> Self {
+        AddressingMode::Absolute(src.0)
+    }
+}
+
 /// AbsoluteIndexedWithX represents an address whose value is stored at an X
 /// register offset from the operand value. Example being LLHH + X.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
@@ -77,6 +83,12 @@ impl From<AbsoluteIndexedWithX> for u16 {
 impl From<AbsoluteIndexedWithX> for Vec<u8> {
     fn from(src: AbsoluteIndexedWithX) -> Self {
         src.0.to_le_bytes().to_vec()
+    }
+}
+
+impl From<AbsoluteIndexedWithX> for AddressingMode {
+    fn from(src: AbsoluteIndexedWithX) -> Self {
+        AddressingMode::AbsoluteIndexedWithX(src.0)
     }
 }
 
@@ -119,6 +131,12 @@ impl From<AbsoluteIndexedWithY> for Vec<u8> {
     }
 }
 
+impl From<AbsoluteIndexedWithY> for AddressingMode {
+    fn from(src: AbsoluteIndexedWithY) -> Self {
+        AddressingMode::AbsoluteIndexedWithY(src.0)
+    }
+}
+
 /// Accumulator addressing mode represents an operand whose value is sourced
 /// from the ACC register.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
@@ -139,6 +157,12 @@ impl<'a> Parser<'a, &'a [u8], Accumulator> for Accumulator {
 impl From<Accumulator> for Vec<u8> {
     fn from(_: Accumulator) -> Self {
         vec![]
+    }
+}
+
+impl From<Accumulator> for AddressingMode {
+    fn from(_: Accumulator) -> Self {
+        AddressingMode::Accumulator
     }
 }
 
@@ -175,6 +199,12 @@ impl From<Immediate> for Vec<u8> {
     }
 }
 
+impl From<Immediate> for AddressingMode {
+    fn from(src: Immediate) -> Self {
+        AddressingMode::Immediate(src.0)
+    }
+}
+
 /// Implied addressing mode. This is signified by no addressing mode
 /// arguments. An example instruction with an implied addressing mode would be.
 /// `nop`
@@ -196,6 +226,12 @@ impl<'a> Parser<'a, &'a [u8], Implied> for Implied {
 impl From<Implied> for Vec<u8> {
     fn from(_: Implied) -> Self {
         vec![]
+    }
+}
+
+impl From<Implied> for AddressingMode {
+    fn from(_: Implied) -> Self {
+        AddressingMode::Implied
     }
 }
 
@@ -238,6 +274,12 @@ impl From<Indirect> for Vec<u8> {
     }
 }
 
+impl From<Indirect> for AddressingMode {
+    fn from(src: Indirect) -> Self {
+        AddressingMode::Indirect(src.0)
+    }
+}
+
 /// IndirectYIndexed represents an address whose value is stored as a Y
 /// register offset for an indirect address defined as the operand. Example
 /// being (LL, LL + 1) + Y.
@@ -272,6 +314,12 @@ impl From<IndirectYIndexed> for Vec<u8> {
     }
 }
 
+impl From<IndirectYIndexed> for AddressingMode {
+    fn from(src: IndirectYIndexed) -> Self {
+        AddressingMode::IndirectYIndexed(src.0)
+    }
+}
+
 /// XIndexedIndirect represents an address whose value is stored as an X
 /// register offset for sequential bytes of an address word. Example being
 /// LL + X, LL + X + 1.
@@ -303,6 +351,12 @@ impl From<XIndexedIndirect> for u8 {
 impl From<XIndexedIndirect> for Vec<u8> {
     fn from(src: XIndexedIndirect) -> Self {
         src.0.to_le_bytes().to_vec()
+    }
+}
+
+impl From<XIndexedIndirect> for AddressingMode {
+    fn from(src: XIndexedIndirect) -> Self {
+        AddressingMode::XIndexedIndirect(src.0)
     }
 }
 
@@ -346,6 +400,12 @@ impl From<Relative> for Vec<u8> {
     }
 }
 
+impl From<Relative> for AddressingMode {
+    fn from(src: Relative) -> Self {
+        AddressingMode::Relative(src.0)
+    }
+}
+
 /// ZeroPage wraps a u8 and represents an address in 00LL format.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct ZeroPage(pub u8);
@@ -376,6 +436,12 @@ impl From<ZeroPage> for u8 {
 impl From<ZeroPage> for Vec<u8> {
     fn from(src: ZeroPage) -> Self {
         vec![src.0]
+    }
+}
+
+impl From<ZeroPage> for AddressingMode {
+    fn from(src: ZeroPage) -> Self {
+        AddressingMode::ZeroPage(src.0)
     }
 }
 
@@ -412,6 +478,12 @@ impl From<ZeroPageIndexedWithX> for Vec<u8> {
     }
 }
 
+impl From<ZeroPageIndexedWithX> for AddressingMode {
+    fn from(src: ZeroPageIndexedWithX) -> Self {
+        AddressingMode::ZeroPageIndexedWithX(src.0)
+    }
+}
+
 /// ZeroPageIndexedWithY wraps a u8 and represents an address in the zeropage +
 /// the value of the Y register in the format of `00LL + y`.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
@@ -442,5 +514,65 @@ impl From<ZeroPageIndexedWithY> for u8 {
 impl From<ZeroPageIndexedWithY> for Vec<u8> {
     fn from(src: ZeroPageIndexedWithY) -> Self {
         vec![src.0]
+    }
+}
+
+impl From<ZeroPageIndexedWithY> for AddressingMode {
+    fn from(src: ZeroPageIndexedWithY) -> Self {
+        AddressingMode::ZeroPageIndexedWithY(src.0)
+    }
+}
+
+/// AddressingMode captures the Addressing mode type with a corresponding
+/// operand of the appropriate bit length.
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum AddressingMode {
+    Accumulator,
+    Implied,
+    Immediate(u8),
+    Absolute(u16),
+    ZeroPage(u8),
+    Relative(i8),
+    Indirect(u16),
+    AbsoluteIndexedWithX(u16),
+    AbsoluteIndexedWithY(u16),
+    ZeroPageIndexedWithX(u8),
+    ZeroPageIndexedWithY(u8),
+    XIndexedIndirect(u8),
+    IndirectYIndexed(u8),
+}
+
+impl Into<Vec<u8>> for AddressingMode {
+    fn into(self) -> Vec<u8> {
+        match self {
+            AddressingMode::Immediate(operand) => vec![operand],
+            AddressingMode::Absolute(operand) => operand.to_le_bytes().to_vec(),
+            AddressingMode::ZeroPage(operand) => vec![operand],
+            AddressingMode::Relative(operand) => {
+                let o_to_u8 = unsafe { std::mem::transmute::<i8, u8>(operand) };
+                vec![o_to_u8]
+            }
+            AddressingMode::Indirect(operand) => operand.to_le_bytes().to_vec(),
+            AddressingMode::AbsoluteIndexedWithX(operand) => operand.to_le_bytes().to_vec(),
+            AddressingMode::AbsoluteIndexedWithY(operand) => operand.to_le_bytes().to_vec(),
+            AddressingMode::ZeroPageIndexedWithX(operand) => vec![operand],
+            AddressingMode::ZeroPageIndexedWithY(operand) => vec![operand],
+            AddressingMode::XIndexedIndirect(operand) => vec![operand],
+            AddressingMode::IndirectYIndexed(operand) => vec![operand],
+            _ => vec![],
+        }
+    }
+}
+
+impl crate::ByteSized for AddressingMode {
+    fn byte_size(&self) -> usize {
+        match self {
+            AddressingMode::Accumulator | AddressingMode::Implied => 0,
+            AddressingMode::Absolute(_)
+            | AddressingMode::Indirect(_)
+            | AddressingMode::AbsoluteIndexedWithX(_)
+            | AddressingMode::AbsoluteIndexedWithY(_) => 2,
+            _ => 1,
+        }
     }
 }
