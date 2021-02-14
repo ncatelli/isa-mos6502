@@ -26,13 +26,6 @@ pub mod mnemonic;
 
 type Bytecode = Vec<u8>;
 
-/// IntoBytecode defines a trait for converting an input to bytecode emitter.
-pub trait IntoBytecode: Sized {
-    type Input: Into<Bytecode>;
-
-    fn into_bytecode(self) -> Bytecode;
-}
-
 /// Instruction represents a single mos6502 instruction, taking a mnemonic and address mode as parameters.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Instruction<M, A>
@@ -107,11 +100,13 @@ macro_rules! generate_instructions {
                 }
             }
 
-            impl IntoBytecode for Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am> {
-                type Input=Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>;
+            impl IntoIterator for Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am> {
+                type Item = u8;
+                type IntoIter = std::vec::IntoIter<Self::Item>;
 
-                fn into_bytecode(self) -> Vec<u8> {
-                    self.into()
+                fn into_iter(self) -> Self::IntoIter {
+                    let item: Vec<Self::Item> = self.into();
+                    item.into_iter()
                 }
             }
         )*
@@ -134,15 +129,13 @@ macro_rules! generate_instructions {
             }
 
             mod bytecode {
-                use $crate::IntoBytecode;
                 $(
                     #[test]
                     fn $name() {
-                        let mut bytecode = $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()).into_bytecode();
-                        bytecode.resize(3, 0x00);
+                        let mut bytecode = $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()).into_iter();
                         assert_eq!(
-                            vec![$opcode, 0x00, 0x00],
-                            bytecode,
+                            Some($opcode),
+                            bytecode.next(),
                         )
                     }
                 )*
