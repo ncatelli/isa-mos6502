@@ -242,18 +242,36 @@ macro_rules! generate_instructions {
                     fn $name() {
                         let bytecode: [u8; 3] = [$opcode, 0x00, 0x00];
                         assert_eq!(
-                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()),
-                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()).parse(&bytecode).unwrap().unwrap()
+                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()),
+                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()).parse(&bytecode).unwrap().unwrap()
                         )
                     }
                 )*
+            }
+
+            mod conversion {
+                #[test]
+                fn conversion_from_generic_to_concrete() {
+                    assert_eq!(
+                        $crate::InstructionVariant::NOPImplied,
+                        std::convert::From::from($crate::Instruction::new(<$crate::mnemonic::NOP>::default(), <$crate::addressing_mode::Implied>::default()))
+                    )
+                }
+
+                #[test]
+                fn conversion_from_concrete_to_generic() {
+                    assert_eq!(
+                        Ok($crate::Instruction::new(<$crate::mnemonic::NOP>::default(), <$crate::addressing_mode::Implied>::default())),
+                        std::convert::TryFrom::try_from($crate::InstructionVariant::NOPImplied),
+                    )
+                }
             }
 
             mod bytecode {
                 $(
                     #[test]
                     fn $name() {
-                        let mut bytecode = $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <crate::addressing_mode::$am>::default()).into_iter();
+                        let mut bytecode = $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()).into_iter();
                         assert_eq!(
                             Some($opcode),
                             bytecode.next(),
