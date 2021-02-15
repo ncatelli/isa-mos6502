@@ -5,6 +5,19 @@
 
 use std::fmt::Debug;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum InstructionErr {
+    ConversionErr,
+}
+
+impl std::fmt::Display for InstructionErr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::ConversionErr => write!(f, "invalid conversion"),
+        }
+    }
+}
+
 /// CycleCost represents an object that can take n cycles to process.
 /// typically this will be assigned to an instruction.
 pub trait CycleCost {
@@ -65,7 +78,7 @@ macro_rules! generate_instruction_variant_conversion {
         impl
             std::convert::From<
                 $crate::Instruction<$crate::mnemonic::$mnemonic, $crate::addressing_mode::Implied>,
-            > for InstructionVariant
+            > for $crate::InstructionVariant
         {
             fn from(
                 _: $crate::Instruction<
@@ -76,6 +89,23 @@ macro_rules! generate_instruction_variant_conversion {
                 $crate::InstructionVariant::$variant
             }
         }
+
+        impl std::convert::TryFrom<$crate::InstructionVariant>
+            for $crate::Instruction<$crate::mnemonic::$mnemonic, $crate::addressing_mode::Implied>
+        {
+            type Error = InstructionErr;
+
+            fn try_from(src: $crate::InstructionVariant) -> Result<Self, Self::Error> {
+                if src == $crate::InstructionVariant::$variant {
+                    Ok($crate::Instruction::new(
+                        <$crate::mnemonic::$mnemonic>::default(),
+                        <$crate::addressing_mode::Implied>::default(),
+                    ))
+                } else {
+                    Err(InstructionErr::ConversionErr)
+                }
+            }
+        }
     };
     ($mnemonic:tt, Accumulator, $variant:tt) => {
         impl
@@ -84,7 +114,7 @@ macro_rules! generate_instruction_variant_conversion {
                     $crate::mnemonic::$mnemonic,
                     $crate::addressing_mode::Accumulator,
                 >,
-            > for InstructionVariant
+            > for crate::InstructionVariant
         {
             fn from(
                 _: $crate::Instruction<
@@ -95,17 +125,54 @@ macro_rules! generate_instruction_variant_conversion {
                 $crate::InstructionVariant::$variant
             }
         }
+
+        impl std::convert::TryFrom<$crate::InstructionVariant>
+            for $crate::Instruction<
+                $crate::mnemonic::$mnemonic,
+                $crate::addressing_mode::Accumulator,
+            >
+        {
+            type Error = InstructionErr;
+
+            fn try_from(src: $crate::InstructionVariant) -> Result<Self, Self::Error> {
+                if src == $crate::InstructionVariant::$variant {
+                    Ok($crate::Instruction::new(
+                        <$crate::mnemonic::$mnemonic>::default(),
+                        <$crate::addressing_mode::Accumulator>::default(),
+                    ))
+                } else {
+                    Err(InstructionErr::ConversionErr)
+                }
+            }
+        }
     };
     ($mnemonic:tt, $am:tt, $variant:tt) => {
         impl
             std::convert::From<
                 $crate::Instruction<$crate::mnemonic::$mnemonic, $crate::addressing_mode::$am>,
-            > for InstructionVariant
+            > for crate::InstructionVariant
         {
             fn from(
                 src: $crate::Instruction<$crate::mnemonic::$mnemonic, $crate::addressing_mode::$am>,
             ) -> Self {
                 $crate::InstructionVariant::$variant(src.addressing_mode.unwrap())
+            }
+        }
+
+        impl std::convert::TryFrom<$crate::InstructionVariant>
+            for $crate::Instruction<$crate::mnemonic::$mnemonic, $crate::addressing_mode::$am>
+        {
+            type Error = InstructionErr;
+
+            fn try_from(src: $crate::InstructionVariant) -> Result<Self, Self::Error> {
+                if let $crate::InstructionVariant::$variant(val) = src {
+                    Ok($crate::Instruction::new(
+                        <$crate::mnemonic::$mnemonic>::default(),
+                        $crate::addressing_mode::$am(val),
+                    ))
+                } else {
+                    Err(InstructionErr::ConversionErr)
+                }
             }
         }
     };
