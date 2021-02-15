@@ -183,24 +183,24 @@ macro_rules! generate_instructions {
 
         // For each valid Instruction<Mnemonic, Addressing Mode> pairing
         $(
-            impl $crate::CycleCost for Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am> {
+            impl $crate::CycleCost for $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am> {
                 fn cycles(&self) -> usize {
                     $cycles
                 }
             }
 
-            impl<'a> parcel::Parser<'a, &'a [u8], Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>>
-                for crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>
+            impl<'a> parcel::Parser<'a, &'a [u8], $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>>
+                for $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>
             {
                 fn parse(
                     &self,
                     input: &'a [u8],
-                ) -> parcel::ParseResult<&'a [u8], Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> {
+                ) -> parcel::ParseResult<&'a [u8], $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> {
                     // If the expected opcode and addressing mode match, map it to a
                     // corresponding Instruction.
                     parcel::map(
                         parcel::and_then(parcel::parsers::byte::expect_byte($opcode), |_| <$crate::addressing_mode::$am>::default()),
-                        |am| Instruction::new(<$crate::mnemonic::$mnc>::default(), am),
+                        |am| $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), am),
                     )
                     .parse(input)
                 }
@@ -209,8 +209,8 @@ macro_rules! generate_instructions {
             // Covert the addressing mode contests to a little-endian bytecode
             // vector and chain that to a vector containing the instructions
             // opcode.
-            impl std::convert::From<Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> for Bytecode {
-                fn from(src: Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>) -> Self {
+            impl std::convert::From<$crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> for Bytecode {
+                fn from(src: $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>) -> Self {
                     let am_bytecode: Vec<u8> = src.addressing_mode.into();
                     vec![$opcode].into_iter().chain(
                         am_bytecode.into_iter()
