@@ -2,15 +2,15 @@ extern crate parcel;
 use crate::ByteSized;
 
 /// Represents various conversion errors between mnemnoic types.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MnemonicErr {
-    ConversionErr,
+    ConversionErr(String),
 }
 
 impl std::fmt::Display for MnemonicErr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::ConversionErr => write!(f, "Unable to convert to mnemonic"),
+            Self::ConversionErr(m) => write!(f, "invalid mnemonic: {}", m),
         }
     }
 }
@@ -69,7 +69,7 @@ macro_rules! generate_mnemonic_parser_and_offset {
                 if src == $text {
                     Ok(<$mnemonic>::default())
                 } else {
-                    Err(MnemonicErr::ConversionErr)
+                    Err(MnemonicErr::ConversionErr(src.to_string()))
                 }
             }
         }
@@ -582,7 +582,7 @@ impl std::convert::TryFrom<&str> for Mnemonic {
             "clv" => Ok(Mnemonic::CLV),
             "brk" => Ok(Mnemonic::BRK),
             "nop" => Ok(Mnemonic::NOP),
-            _ => Err(format!("Invalid instruction: {}", src)),
+            _ => Err(MnemonicErr::ConversionErr(src.to_string()).to_string()),
         }
     }
 }
