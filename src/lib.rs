@@ -65,7 +65,7 @@ macro_rules! generate_instruction_variant_conversion {
         impl
             std::convert::From<
                 $crate::Instruction<$crate::mnemonic::$mnemonic, $crate::addressing_mode::Implied>,
-            > for InstructionVariations
+            > for InstructionVariant
         {
             fn from(
                 _: $crate::Instruction<
@@ -73,7 +73,7 @@ macro_rules! generate_instruction_variant_conversion {
                     $crate::addressing_mode::Implied,
                 >,
             ) -> Self {
-                $crate::InstructionVariations::$variant
+                $crate::InstructionVariant::$variant
             }
         }
     };
@@ -84,7 +84,7 @@ macro_rules! generate_instruction_variant_conversion {
                     $crate::mnemonic::$mnemonic,
                     $crate::addressing_mode::Accumulator,
                 >,
-            > for InstructionVariations
+            > for InstructionVariant
         {
             fn from(
                 _: $crate::Instruction<
@@ -92,7 +92,7 @@ macro_rules! generate_instruction_variant_conversion {
                     $crate::addressing_mode::Accumulator,
                 >,
             ) -> Self {
-                $crate::InstructionVariations::$variant
+                $crate::InstructionVariant::$variant
             }
         }
     };
@@ -100,12 +100,12 @@ macro_rules! generate_instruction_variant_conversion {
         impl
             std::convert::From<
                 $crate::Instruction<$crate::mnemonic::$mnemonic, $crate::addressing_mode::$am>,
-            > for InstructionVariations
+            > for InstructionVariant
         {
             fn from(
                 src: $crate::Instruction<$crate::mnemonic::$mnemonic, $crate::addressing_mode::$am>,
             ) -> Self {
-                $crate::InstructionVariations::$variant(src.addressing_mode.unwrap())
+                $crate::InstructionVariant::$variant(src.addressing_mode.unwrap())
             }
         }
     };
@@ -355,10 +355,10 @@ generate_instructions!(
     nop_implied: NOP, Implied, NOPImplied, 0xea, 2,
 );
 
-/// InstructionVariations functions as a concrete implementations of the generic
+/// InstructionVariant functions as a concrete implementations of the generic
 /// instruction types for use when runtime.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum InstructionVariations {
+pub enum InstructionVariant {
     ADCAbsolute(u16),
     ADCAbsoluteIndexedWithX(u16),
     ADCAbsoluteIndexedWithY(u16),
