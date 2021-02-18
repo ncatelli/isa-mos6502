@@ -592,8 +592,8 @@ pub enum AddressingModeType {
     AbsoluteIndexedWithY,
     ZeroPageIndexedWithX,
     ZeroPageIndexedWithY,
-    IndexedIndirect,
-    IndirectIndexed,
+    XIndexedIndirect,
+    IndirectYIndexed,
 }
 
 impl std::fmt::Display for AddressingModeType {
