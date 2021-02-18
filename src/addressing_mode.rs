@@ -576,3 +576,28 @@ impl crate::ByteSized for AddressingMode {
         }
     }
 }
+
+/// AddressingModeType captures the addressing mode type without the operand
+/// value.
+#[derive(Debug, Clone, Copy, PartialEq, Hash)]
+pub enum AddressingModeType {
+    Accumulator,
+    Implied,
+    Immediate,
+    Absolute,
+    ZeroPage,
+    Relative,
+    Indirect,
+    AbsoluteIndexedWithX,
+    AbsoluteIndexedWithY,
+    ZeroPageIndexedWithX,
+    ZeroPageIndexedWithY,
+    IndexedIndirect,
+    IndirectIndexed,
+}
+
+impl std::fmt::Display for AddressingModeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
