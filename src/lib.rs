@@ -73,6 +73,19 @@ where
     }
 }
 
+#[allow(unused_variables)]
+macro_rules! generate_instruction_variant_match_case_to_inst {
+    ($mnemonic:tt, Implied, $variant:tt) => {
+        Self::$variant
+    };
+    ($mnemonic:tt, Accumulator, $variant:tt) => {
+        Self::$variant
+    };
+    ($mnemonic:tt, $am:tt, $variant:tt) => {
+        Self::$variant(_)
+    };
+}
+
 macro_rules! generate_instruction_variant_conversion {
     ($mnemonic:tt, Implied, $variant:tt) => {
         impl
@@ -231,6 +244,29 @@ macro_rules! generate_instructions {
                 }
             }
         )*
+
+        // Generate Variant implementations of Instruction-specific commands.
+        impl $crate::CycleCost for $crate::InstructionVariant {
+            fn cycles(&self) -> usize {
+                match self {
+                    $(
+                        generate_instruction_variant_match_case_to_inst!($mnc, $am, $variant) => $cycles,
+                    )*
+                }
+            }
+        }
+
+
+        // Generate Variant implementations of Instruction-specific commands.
+        impl $crate::ByteSized for $crate::InstructionVariant {
+            fn byte_size(&self) -> usize {
+                match self {
+                    $(
+                        generate_instruction_variant_match_case_to_inst!($mnc, $am, $variant) => $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()).byte_size(),
+                    )*
+                }
+            }
+        }
 
         // General parser tests
         #[cfg(test)]
