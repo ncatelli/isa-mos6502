@@ -601,3 +601,23 @@ impl std::fmt::Display for AddressingModeType {
         write!(f, "{:?}", self)
     }
 }
+
+impl std::convert::From<AddressingMode> for AddressingModeType {
+    fn from(src: AddressingMode) -> Self {
+        match src {
+            AddressingMode::Immediate(_) => Self::Immediate,
+            AddressingMode::Absolute(_) => Self::Absolute,
+            AddressingMode::Accumulator => Self::Accumulator,
+            AddressingMode::Implied => Self::Implied,
+            AddressingMode::ZeroPage(_) => Self::ZeroPage,
+            AddressingMode::Relative(_) => Self::Relative,
+            AddressingMode::Indirect(_) => Self::Indirect,
+            AddressingMode::AbsoluteIndexedWithX(_) => Self::AbsoluteIndexedWithX,
+            AddressingMode::AbsoluteIndexedWithY(_) => Self::AbsoluteIndexedWithY,
+            AddressingMode::ZeroPageIndexedWithX(_) => Self::ZeroPageIndexedWithX,
+            AddressingMode::ZeroPageIndexedWithY(_) => Self::ZeroPageIndexedWithY,
+            AddressingMode::XIndexedIndirect(_) => Self::XIndexedIndirect,
+            AddressingMode::IndirectYIndexed(_) => Self::IndirectYIndexed,
+        }
+    }
+}
