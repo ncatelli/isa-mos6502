@@ -1094,3 +1094,17 @@ impl std::convert::From<InstructionVariant> for Bytecode {
         }
     }
 }
+
+impl std::convert::TryFrom<(mnemonic::Mnemonic, addressing_mode::AddressingMode)>
+    for InstructionVariant
+{
+    type Error = InstructionErr;
+
+    fn try_from(
+        src: (mnemonic::Mnemonic, addressing_mode::AddressingMode),
+    ) -> Result<Self, Self::Error> {
+        match src {
+            _ => todo!(),
+        }
+    }
+}
