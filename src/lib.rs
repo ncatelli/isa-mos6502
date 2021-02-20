@@ -637,6 +637,19 @@ pub enum InstructionVariant {
     TYAImplied,
 }
 
+impl InstructionVariant {
+    /// new functions as a wrapper around TryFrom<(Mnemonic, AddressingMode)
+    /// and returning a Result. This functions identically other than requiring
+    /// that the TryFrom trait be imported to call this.
+    pub fn new(
+        m: mnemonic::Mnemonic,
+        am: addressing_mode::AddressingMode,
+    ) -> Result<Self, InstructionErr> {
+        use std::convert::TryFrom;
+        <InstructionVariant>::try_from((m, am))
+    }
+}
+
 /// Implements bytecode converstion for InstructionVariant by explicitly converting to the generic type.
 impl std::convert::From<InstructionVariant> for Bytecode {
     fn from(src: InstructionVariant) -> Bytecode {
