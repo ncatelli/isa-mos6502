@@ -100,7 +100,7 @@ pub struct LDY;
 
 generate_mnemonic_parser_and_offset!(LDY, "ldy", 0xa0, 0xa4, 0xb4, 0xac, 0xbc);
 
-// Store Accumulator in memory
+/// Store Accumulator in memory
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct STA;
 
@@ -264,7 +264,7 @@ pub struct BEQ;
 
 generate_mnemonic_parser_and_offset!(BEQ, "beq", 0xf0);
 
-// Branch on positive. Follows branch when the negative flag is not set.
+/// Branch on positive. Follows branch when the negative flag is not set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BPL;
 
@@ -345,7 +345,7 @@ pub struct PHP;
 
 generate_mnemonic_parser_and_offset!(PHP, "php", 0x08);
 
-// Pull Processor Status from stack.
+/// Pull Processor Status from stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct PLP;
 
