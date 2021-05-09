@@ -1,8 +1,8 @@
 [package]
 name = "isa-mos6502"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Nate Catelli <ncatelli@packetfire.org>"]
 edition = "2018"
 
 [dependencies]
-parcel = { git = "https://github.com/ncatelli/parcel", tag = "v1.9.1" }
+parcel = { git = "https://github.com/ncatelli/parcel", tag = "v2.0.0" }

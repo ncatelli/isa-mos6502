@@ -19,8 +19,8 @@ macro_rules! generate_mnemonic_parser_and_offset {
     ($mnemonic:ty, $text:literal, $opcode:literal) => {
         impl ByteSized for $mnemonic {}
 
-        impl<'a> parcel::Parser<'a, &'a [u8], $mnemonic> for $mnemonic {
-            fn parse(&self, input: &'a [u8]) -> parcel::ParseResult<&'a [u8], $mnemonic> {
+        impl<'a> parcel::Parser<'a, &'a [(usize, u8)], $mnemonic> for $mnemonic {
+            fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], $mnemonic> {
                 parcel::map(
                     parcel::parsers::byte::expect_byte($opcode),
                     |_| <$mnemonic>::default()
@@ -28,8 +28,8 @@ macro_rules! generate_mnemonic_parser_and_offset {
             }
         }
 
-        impl<'a> parcel::Parser<'a, &'a [char], $mnemonic> for $mnemonic {
-            fn parse(&self, input: &'a [char]) -> parcel::ParseResult<&'a [char], $mnemonic> {
+        impl<'a> parcel::Parser<'a, &'a [(usize, char)], $mnemonic> for $mnemonic {
+            fn parse(&self, input: &'a [(usize, char)]) -> parcel::ParseResult<&'a [(usize, char)], $mnemonic> {
                 parcel::map(
                     parcel::parsers::character::expect_str($text),
                     |_| <$mnemonic>::default()
@@ -41,8 +41,8 @@ macro_rules! generate_mnemonic_parser_and_offset {
     ($mnemonic:ty, $text:literal, $( $opcode:literal ),* ) => {
         impl ByteSized for $mnemonic {}
 
-        impl<'a> parcel::Parser<'a, &'a [u8], $mnemonic> for $mnemonic {
-            fn parse(&self, input: &'a [u8]) -> parcel::ParseResult<&'a [u8], $mnemonic> {
+        impl<'a> parcel::Parser<'a, &'a [(usize, u8)], $mnemonic> for $mnemonic {
+            fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], $mnemonic> {
                 parcel::one_of(vec![
                     $(
                         parcel::parsers::byte::expect_byte($opcode),
@@ -53,8 +53,8 @@ macro_rules! generate_mnemonic_parser_and_offset {
             }
         }
 
-        impl<'a> parcel::Parser<'a, &'a [char], $mnemonic> for $mnemonic {
-            fn parse(&self, input: &'a [char]) -> parcel::ParseResult<&'a [char], $mnemonic> {
+        impl<'a> parcel::Parser<'a, &'a [(usize, char)], $mnemonic> for $mnemonic {
+            fn parse(&self, input: &'a [(usize, char)]) -> parcel::ParseResult<&'a [(usize, char)], $mnemonic> {
                 parcel::map(
                     parcel::parsers::character::expect_str($text),
                     |_| <$mnemonic>::default()
@@ -84,435 +84,435 @@ macro_rules! generate_mnemonic_parser_and_offset {
 
 /// Load operand into Accumulator
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct LDA;
+pub struct Lda;
 
-generate_mnemonic_parser_and_offset!(LDA, "lda", 0xa9, 0xa5, 0xb5, 0xad, 0xbd, 0xb9, 0xa1, 0xb1);
+generate_mnemonic_parser_and_offset!(Lda, "lda", 0xa9, 0xa5, 0xb5, 0xad, 0xbd, 0xb9, 0xa1, 0xb1);
 
 /// Load operand into X Register
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct LDX;
+pub struct Ldx;
 
-generate_mnemonic_parser_and_offset!(LDX, "ldx", 0xa2, 0xa6, 0xb6, 0xae, 0xbe);
+generate_mnemonic_parser_and_offset!(Ldx, "ldx", 0xa2, 0xa6, 0xb6, 0xae, 0xbe);
 
 /// Load operand into Y Register
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct LDY;
+pub struct Ldy;
 
-generate_mnemonic_parser_and_offset!(LDY, "ldy", 0xa0, 0xa4, 0xb4, 0xac, 0xbc);
+generate_mnemonic_parser_and_offset!(Ldy, "ldy", 0xa0, 0xa4, 0xb4, 0xac, 0xbc);
 
 /// Store Accumulator in memory
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct STA;
+pub struct Sta;
 
-generate_mnemonic_parser_and_offset!(STA, "sta", 0x8d, 0x85, 0x95, 0x9d, 0x99, 0x81, 0x91);
+generate_mnemonic_parser_and_offset!(Sta, "sta", 0x8d, 0x85, 0x95, 0x9d, 0x99, 0x81, 0x91);
 
 /// Store X register in memory.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct STX;
+pub struct Stx;
 
-generate_mnemonic_parser_and_offset!(STX, "stx", 0x8e, 0x86, 0x96);
+generate_mnemonic_parser_and_offset!(Stx, "stx", 0x8e, 0x86, 0x96);
 
 /// Story Y register in memory.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct STY;
+pub struct Sty;
 
-generate_mnemonic_parser_and_offset!(STY, "sty", 0x8c, 0x84, 0x94);
+generate_mnemonic_parser_and_offset!(Sty, "sty", 0x8c, 0x84, 0x94);
 
 // Arithmetic
 
 /// Add Memory to Accumulator with carry.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct ADC;
+pub struct Adc;
 
-generate_mnemonic_parser_and_offset!(ADC, "adc", 0x6d, 0x7d, 0x79, 0x71, 0x69, 0x61, 0x65, 0x75);
+generate_mnemonic_parser_and_offset!(Adc, "adc", 0x6d, 0x7d, 0x79, 0x71, 0x69, 0x61, 0x65, 0x75);
 
 /// Subtract memory from Accumulator with borrow.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct SBC;
+pub struct Sbc;
 
-generate_mnemonic_parser_and_offset!(SBC, "sbc", 0xed, 0xfd, 0xf9, 0xf1, 0xe9, 0xe1, 0xe5, 0xf5);
+generate_mnemonic_parser_and_offset!(Sbc, "sbc", 0xed, 0xfd, 0xf9, 0xf1, 0xe9, 0xe1, 0xe5, 0xf5);
 
 /// Increment Memory by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct INC;
+pub struct Inc;
 
-generate_mnemonic_parser_and_offset!(INC, "inc", 0xee, 0xfe, 0xe6, 0xf6);
+generate_mnemonic_parser_and_offset!(Inc, "inc", 0xee, 0xfe, 0xe6, 0xf6);
 
 /// Increment X register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct INX;
+pub struct Inx;
 
-generate_mnemonic_parser_and_offset!(INX, "inx", 0xe8);
+generate_mnemonic_parser_and_offset!(Inx, "inx", 0xe8);
 
 /// Increment Y register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct INY;
+pub struct Iny;
 
-generate_mnemonic_parser_and_offset!(INY, "iny", 0xc8);
+generate_mnemonic_parser_and_offset!(Iny, "iny", 0xc8);
 
 /// Decrement memory by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct DEC;
+pub struct Dec;
 
-generate_mnemonic_parser_and_offset!(DEC, "dec", 0xce, 0xde, 0xc6, 0xd6);
+generate_mnemonic_parser_and_offset!(Dec, "dec", 0xce, 0xde, 0xc6, 0xd6);
 
 /// Decrement X register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct DEX;
+pub struct Dex;
 
-generate_mnemonic_parser_and_offset!(DEX, "dex", 0xca);
+generate_mnemonic_parser_and_offset!(Dex, "dex", 0xca);
 
 /// Decrement Y register by one.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct DEY;
+pub struct Dey;
 
-generate_mnemonic_parser_and_offset!(DEY, "dey", 0x88);
+generate_mnemonic_parser_and_offset!(Dey, "dey", 0x88);
 
 // Shift and Rotate
 
 /// Shift one bit left (Memory or Accumulator)
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct ASL;
+pub struct Asl;
 
-generate_mnemonic_parser_and_offset!(ASL, "asl", 0x0e, 0x1e, 0x0a, 0x06, 0x16);
+generate_mnemonic_parser_and_offset!(Asl, "asl", 0x0e, 0x1e, 0x0a, 0x06, 0x16);
 
 /// Shift one bit right (Memory or Accumulator).
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct LSR;
+pub struct Lsr;
 
-generate_mnemonic_parser_and_offset!(LSR, "lsr", 0x4e, 0x5e, 0x4a, 0x46, 0x56);
+generate_mnemonic_parser_and_offset!(Lsr, "lsr", 0x4e, 0x5e, 0x4a, 0x46, 0x56);
 
 /// Rotate one bit left (Memory or Accumulator).
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct ROL;
+pub struct Rol;
 
-generate_mnemonic_parser_and_offset!(ROL, "rol", 0x2e, 0x3e, 0x2a, 0x26, 0x36);
+generate_mnemonic_parser_and_offset!(Rol, "rol", 0x2e, 0x3e, 0x2a, 0x26, 0x36);
 
 /// Rotate one bit right (Memory or Accumulator)
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct ROR;
+pub struct Ror;
 
-generate_mnemonic_parser_and_offset!(ROR, "ror", 0x6e, 0x7e, 0x6a, 0x66, 0x76);
+generate_mnemonic_parser_and_offset!(Ror, "ror", 0x6e, 0x7e, 0x6a, 0x66, 0x76);
 
 /// And Memory with Accumulator.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct AND;
+pub struct And;
 
-generate_mnemonic_parser_and_offset!(AND, "and", 0x2d, 0x3d, 0x39, 0x21, 0x29, 0x31, 0x25, 0x35);
+generate_mnemonic_parser_and_offset!(And, "and", 0x2d, 0x3d, 0x39, 0x21, 0x29, 0x31, 0x25, 0x35);
 
 /// Or memory with Accumulator.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct ORA;
+pub struct Ora;
 
-generate_mnemonic_parser_and_offset!(ORA, "ora", 0x0d, 0x1d, 0x19, 0x11, 0x09, 0x01, 0x05, 0x15);
+generate_mnemonic_parser_and_offset!(Ora, "ora", 0x0d, 0x1d, 0x19, 0x11, 0x09, 0x01, 0x05, 0x15);
 
 /// Exclusive-Or memory with Accumulator.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct EOR;
+pub struct Eor;
 
-generate_mnemonic_parser_and_offset!(EOR, "eor", 0x4d, 0x5d, 0x59, 0x51, 0x49, 0x41, 0x45, 0x55);
+generate_mnemonic_parser_and_offset!(Eor, "eor", 0x4d, 0x5d, 0x59, 0x51, 0x49, 0x41, 0x45, 0x55);
 
 // Compare and Test Bit
 
 /// Compare memory with Accumulator
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct CMP;
+pub struct Cmp;
 
-generate_mnemonic_parser_and_offset!(CMP, "cmp", 0xc9, 0xcd, 0xc5, 0xd5, 0xdd, 0xd9, 0xc1, 0xd1);
-
-/// Compare memory with X register
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct CPX;
-
-generate_mnemonic_parser_and_offset!(CPX, "cpx", 0xec, 0xe0, 0xe4);
+generate_mnemonic_parser_and_offset!(Cmp, "cmp", 0xc9, 0xcd, 0xc5, 0xd5, 0xdd, 0xd9, 0xc1, 0xd1);
 
 /// Compare memory with X register
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct CPY;
+pub struct Cpx;
 
-generate_mnemonic_parser_and_offset!(CPY, "cpy", 0xcc, 0xc0, 0xc4);
+generate_mnemonic_parser_and_offset!(Cpx, "cpx", 0xec, 0xe0, 0xe4);
+
+/// Compare memory with X register
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct Cpy;
+
+generate_mnemonic_parser_and_offset!(Cpy, "cpy", 0xcc, 0xc0, 0xc4);
 
 /// Test Bits in Memory with Accumulator.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct BIT;
+pub struct Bit;
 
-generate_mnemonic_parser_and_offset!(BIT, "bit", 0x24, 0x2c);
+generate_mnemonic_parser_and_offset!(Bit, "bit", 0x24, 0x2c);
 
 // Branch
 
 /// Branch on carry clear
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct BCC;
+pub struct Bcc;
 
-generate_mnemonic_parser_and_offset!(BCC, "bcc", 0x90);
+generate_mnemonic_parser_and_offset!(Bcc, "bcc", 0x90);
 
 /// Branch on carry set
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct BCS;
+pub struct Bcs;
 
-generate_mnemonic_parser_and_offset!(BCS, "bcs", 0xb0);
+generate_mnemonic_parser_and_offset!(Bcs, "bcs", 0xb0);
 
 /// Branch on Zero. Follows branch when the Zero flag is not set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct BNE;
+pub struct Bne;
 
-generate_mnemonic_parser_and_offset!(BNE, "bne", 0xd0);
+generate_mnemonic_parser_and_offset!(Bne, "bne", 0xd0);
 
 /// Branch on Zero. Follows branch when the Zero flag is set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct BEQ;
+pub struct Beq;
 
-generate_mnemonic_parser_and_offset!(BEQ, "beq", 0xf0);
+generate_mnemonic_parser_and_offset!(Beq, "beq", 0xf0);
 
 /// Branch on positive. Follows branch when the negative flag is not set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct BPL;
+pub struct Bpl;
 
-generate_mnemonic_parser_and_offset!(BPL, "bpl", 0x10);
+generate_mnemonic_parser_and_offset!(Bpl, "bpl", 0x10);
 
 /// Branch on negative. Follows branch when the negative flag is set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct BMI;
+pub struct Bmi;
 
-generate_mnemonic_parser_and_offset!(BMI, "bmi", 0x30);
+generate_mnemonic_parser_and_offset!(Bmi, "bmi", 0x30);
 
 /// Branch on Overflow clear. Follows branch when overflow flag is not set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct BVC;
+pub struct Bvc;
 
-generate_mnemonic_parser_and_offset!(BVC, "bvc", 0x50);
+generate_mnemonic_parser_and_offset!(Bvc, "bvc", 0x50);
 
 /// Branch on Overflow. Follows branch when the overflow flag is set.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct BVS;
+pub struct Bvs;
 
-generate_mnemonic_parser_and_offset!(BVS, "bvs", 0x70);
+generate_mnemonic_parser_and_offset!(Bvs, "bvs", 0x70);
 
 // Transfer
 /// Transfer Accumulator to X
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct TAX;
+pub struct Tax;
 
-generate_mnemonic_parser_and_offset!(TAX, "tax", 0xaa);
+generate_mnemonic_parser_and_offset!(Tax, "tax", 0xaa);
 
 /// Transfer X to Accumulator
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct TXA;
+pub struct Txa;
 
-generate_mnemonic_parser_and_offset!(TXA, "txa", 0x8a);
+generate_mnemonic_parser_and_offset!(Txa, "txa", 0x8a);
 
 /// Transfer Accumulator to Y
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct TAY;
+pub struct Tay;
 
-generate_mnemonic_parser_and_offset!(TAY, "tay", 0xa8);
+generate_mnemonic_parser_and_offset!(Tay, "tay", 0xa8);
 
 /// Transfer Y to Accumulator
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct TYA;
+pub struct Tya;
 
-generate_mnemonic_parser_and_offset!(TYA, "tya", 0x98);
+generate_mnemonic_parser_and_offset!(Tya, "tya", 0x98);
 
 /// Transfer Stack Pointer to X
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct TSX;
+pub struct Tsx;
 
-generate_mnemonic_parser_and_offset!(TSX, "tsx", 0xba);
+generate_mnemonic_parser_and_offset!(Tsx, "tsx", 0xba);
 
 /// Transfer X to Stack Pointer
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct TXS;
+pub struct Txs;
 
-generate_mnemonic_parser_and_offset!(TXS, "txs", 0x9a);
+generate_mnemonic_parser_and_offset!(Txs, "txs", 0x9a);
 
 // Stack Operations
 
 /// Push Accumulator on stack
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct PHA;
+pub struct Pha;
 
-generate_mnemonic_parser_and_offset!(PHA, "pha", 0x48);
+generate_mnemonic_parser_and_offset!(Pha, "pha", 0x48);
 
 /// Pull Accumulator from stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct PLA;
+pub struct Pla;
 
-generate_mnemonic_parser_and_offset!(PLA, "pla", 0x46);
+generate_mnemonic_parser_and_offset!(Pla, "pla", 0x46);
 
 /// Push Processor Status to stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct PHP;
+pub struct Php;
 
-generate_mnemonic_parser_and_offset!(PHP, "php", 0x08);
+generate_mnemonic_parser_and_offset!(Php, "php", 0x08);
 
 /// Pull Processor Status from stack.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct PLP;
+pub struct Plp;
 
-generate_mnemonic_parser_and_offset!(PLP, "plp", 0x28);
+generate_mnemonic_parser_and_offset!(Plp, "plp", 0x28);
 
 // Subroutines and Jump
 
 /// Jump
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct JMP;
+pub struct Jmp;
 
-generate_mnemonic_parser_and_offset!(JMP, "jmp", 0x4c, 0x6c);
+generate_mnemonic_parser_and_offset!(Jmp, "jmp", 0x4c, 0x6c);
 
 /// Jump to a new location saving the return address.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct JSR;
+pub struct Jsr;
 
-generate_mnemonic_parser_and_offset!(JSR, "jsr", 0x20);
+generate_mnemonic_parser_and_offset!(Jsr, "jsr", 0x20);
 
 /// Return from subroutine.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct RTS;
+pub struct Rts;
 
-generate_mnemonic_parser_and_offset!(RTS, "rts", 0x60);
+generate_mnemonic_parser_and_offset!(Rts, "rts", 0x60);
 
 /// Return from interrupt.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct RTI;
+pub struct Rti;
 
-generate_mnemonic_parser_and_offset!(RTI, "rti", 0x40);
+generate_mnemonic_parser_and_offset!(Rti, "rti", 0x40);
 
 // Set and Clear
 
 /// Clear carry
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct CLC;
+pub struct Clc;
 
-generate_mnemonic_parser_and_offset!(CLC, "clc", 0xad);
+generate_mnemonic_parser_and_offset!(Clc, "clc", 0xad);
 
 /// Set carry
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct SEC;
+pub struct Sec;
 
-generate_mnemonic_parser_and_offset!(SEC, "sec", 0x38);
+generate_mnemonic_parser_and_offset!(Sec, "sec", 0x38);
 
 /// Clear decimal
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct CLD;
+pub struct Cld;
 
-generate_mnemonic_parser_and_offset!(CLD, "cld", 0xd8);
+generate_mnemonic_parser_and_offset!(Cld, "cld", 0xd8);
 
 /// Set decimal
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct SED;
+pub struct Sed;
 
-generate_mnemonic_parser_and_offset!(SED, "sed", 0xf8);
+generate_mnemonic_parser_and_offset!(Sed, "sed", 0xf8);
 
 /// Clear interrupt disable
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct CLI;
+pub struct Cli;
 
-generate_mnemonic_parser_and_offset!(CLI, "cli", 0x58);
+generate_mnemonic_parser_and_offset!(Cli, "cli", 0x58);
 
 /// Set interrupt disable
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct SEI;
+pub struct Sei;
 
-generate_mnemonic_parser_and_offset!(SEI, "sei", 0x78);
+generate_mnemonic_parser_and_offset!(Sei, "sei", 0x78);
 
 /// Clear overflow
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct CLV;
+pub struct Clv;
 
-generate_mnemonic_parser_and_offset!(CLV, "clv", 0xb8);
+generate_mnemonic_parser_and_offset!(Clv, "clv", 0xb8);
 
 // Misc
 
 /// Force Break
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct BRK;
+pub struct Brk;
 
-generate_mnemonic_parser_and_offset!(BRK, "brk", 0x00);
+generate_mnemonic_parser_and_offset!(Brk, "brk", 0x00);
 
 /// No operation
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct NOP;
+pub struct Nop;
 
-generate_mnemonic_parser_and_offset!(NOP, "nop", 0xea);
+generate_mnemonic_parser_and_offset!(Nop, "nop", 0xea);
 
 /// Mnemonic stores an enum representing every possible mnemonic.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Mnemonic {
     // Load-Store
-    LDA,
-    LDX,
-    LDY,
-    STA,
-    STX,
-    STY,
+    Lda,
+    Ldx,
+    Ldy,
+    Sta,
+    Stx,
+    Sty,
 
     // Arithmetic
-    ADC,
-    SBC,
-    INC,
-    INX,
-    INY,
-    DEC,
-    DEX,
-    DEY,
+    Adc,
+    Sbc,
+    Inc,
+    Inx,
+    Iny,
+    Dec,
+    Dex,
+    Dey,
 
     // Shift and Rotate
-    ASL,
-    LSR,
-    ROL,
-    ROR,
-    AND,
-    ORA,
-    EOR,
+    Asl,
+    Lsr,
+    Rol,
+    Ror,
+    And,
+    Ora,
+    Eor,
 
     // Compare and Test Bit
-    CMP,
-    CPX,
-    CPY,
-    BIT,
+    Cmp,
+    Cpx,
+    Cpy,
+    Bit,
 
     // Branch
-    BCC,
-    BCS,
-    BNE,
-    BEQ,
-    BPL,
-    BMI,
-    BVC,
-    BVS,
+    Bcc,
+    Bcs,
+    Bne,
+    Beq,
+    Bpl,
+    Bmi,
+    Bvc,
+    Bvs,
 
     // Transfer
-    TAX,
-    TXA,
-    TAY,
-    TYA,
-    TSX,
-    TXS,
+    Tax,
+    Txa,
+    Tay,
+    Tya,
+    Tsx,
+    Txs,
 
     // Stack
-    PHA,
-    PLA,
-    PHP,
-    PLP,
+    Pha,
+    Pla,
+    Php,
+    Plp,
 
     // Subroutines and Jump
-    JMP,
-    JSR,
-    RTS,
-    RTI,
+    Jmp,
+    Jsr,
+    Rts,
+    Rti,
 
     // Set and Clear
-    CLC,
-    SEC,
-    CLD,
-    SED,
-    CLI,
-    SEI,
-    CLV,
+    Clc,
+    Sec,
+    Cld,
+    Sed,
+    Cli,
+    Sei,
+    Clv,
 
     // Misc
-    BRK,
-    NOP,
+    Brk,
+    Nop,
 }
 
 impl crate::ByteSized for Mnemonic {
@@ -526,62 +526,62 @@ impl std::convert::TryFrom<&str> for Mnemonic {
 
     fn try_from(src: &str) -> Result<Mnemonic, Self::Error> {
         match src {
-            "lda" => Ok(Mnemonic::LDA),
-            "ldx" => Ok(Mnemonic::LDX),
-            "ldy" => Ok(Mnemonic::LDY),
-            "sta" => Ok(Mnemonic::STA),
-            "stx" => Ok(Mnemonic::STX),
-            "sty" => Ok(Mnemonic::STY),
-            "adc" => Ok(Mnemonic::ADC),
-            "sbc" => Ok(Mnemonic::SBC),
-            "inc" => Ok(Mnemonic::INC),
-            "inx" => Ok(Mnemonic::INX),
-            "iny" => Ok(Mnemonic::INY),
-            "dec" => Ok(Mnemonic::DEC),
-            "dex" => Ok(Mnemonic::DEX),
-            "dey" => Ok(Mnemonic::DEY),
-            "asl" => Ok(Mnemonic::ASL),
-            "lsr" => Ok(Mnemonic::LSR),
-            "rol" => Ok(Mnemonic::ROL),
-            "ror" => Ok(Mnemonic::ROR),
-            "and" => Ok(Mnemonic::AND),
-            "ora" => Ok(Mnemonic::ORA),
-            "eor" => Ok(Mnemonic::EOR),
-            "cmp" => Ok(Mnemonic::CMP),
-            "cpx" => Ok(Mnemonic::CPX),
-            "cpy" => Ok(Mnemonic::CPY),
-            "bit" => Ok(Mnemonic::BIT),
-            "bcc" => Ok(Mnemonic::BCC),
-            "bcs" => Ok(Mnemonic::BCS),
-            "bnd" => Ok(Mnemonic::BNE),
-            "beq" => Ok(Mnemonic::BEQ),
-            "bpl" => Ok(Mnemonic::BPL),
-            "bmi" => Ok(Mnemonic::BMI),
-            "bvc" => Ok(Mnemonic::BVC),
-            "bvs" => Ok(Mnemonic::BVS),
-            "tax" => Ok(Mnemonic::TAX),
-            "txa" => Ok(Mnemonic::TXA),
-            "tay" => Ok(Mnemonic::TAY),
-            "tya" => Ok(Mnemonic::TYA),
-            "tsx" => Ok(Mnemonic::TSX),
-            "txs" => Ok(Mnemonic::TXS),
-            "pha" => Ok(Mnemonic::PHA),
-            "pla" => Ok(Mnemonic::PLA),
-            "php" => Ok(Mnemonic::PHP),
-            "plp" => Ok(Mnemonic::PLP),
-            "jmp" => Ok(Mnemonic::JMP),
-            "jsr" => Ok(Mnemonic::JSR),
-            "rts" => Ok(Mnemonic::RTS),
-            "rti" => Ok(Mnemonic::RTI),
-            "clc" => Ok(Mnemonic::CLC),
-            "sec" => Ok(Mnemonic::SEC),
-            "cld" => Ok(Mnemonic::CLD),
-            "sed" => Ok(Mnemonic::SED),
-            "cli" => Ok(Mnemonic::CLI),
-            "sei" => Ok(Mnemonic::SEI),
-            "clv" => Ok(Mnemonic::CLV),
-            "brk" => Ok(Mnemonic::BRK),
-            "nop" => Ok(Mnemonic::NOP),
+            "lda" => Ok(Mnemonic::Lda),
+            "ldx" => Ok(Mnemonic::Ldx),
+            "ldy" => Ok(Mnemonic::Ldy),
+            "sta" => Ok(Mnemonic::Sta),
+            "stx" => Ok(Mnemonic::Stx),
+            "sty" => Ok(Mnemonic::Sty),
+            "adc" => Ok(Mnemonic::Adc),
+            "sbc" => Ok(Mnemonic::Sbc),
+            "inc" => Ok(Mnemonic::Inc),
+            "inx" => Ok(Mnemonic::Inx),
+            "iny" => Ok(Mnemonic::Iny),
+            "dec" => Ok(Mnemonic::Dec),
+            "dex" => Ok(Mnemonic::Dex),
+            "dey" => Ok(Mnemonic::Dey),
+            "asl" => Ok(Mnemonic::Asl),
+            "lsr" => Ok(Mnemonic::Lsr),
+            "rol" => Ok(Mnemonic::Rol),
+            "ror" => Ok(Mnemonic::Ror),
+            "and" => Ok(Mnemonic::And),
+            "ora" => Ok(Mnemonic::Ora),
+            "eor" => Ok(Mnemonic::Eor),
+            "cmp" => Ok(Mnemonic::Cmp),
+            "cpx" => Ok(Mnemonic::Cpx),
+            "cpy" => Ok(Mnemonic::Cpy),
+            "bit" => Ok(Mnemonic::Bit),
+            "bcc" => Ok(Mnemonic::Bcc),
+            "bcs" => Ok(Mnemonic::Bcs),
+            "bnd" => Ok(Mnemonic::Bne),
+            "beq" => Ok(Mnemonic::Beq),
+            "bpl" => Ok(Mnemonic::Bpl),
+            "bmi" => Ok(Mnemonic::Bmi),
+            "bvc" => Ok(Mnemonic::Bvc),
+            "bvs" => Ok(Mnemonic::Bvs),
+            "tax" => Ok(Mnemonic::Tax),
+            "txa" => Ok(Mnemonic::Txa),
+            "tay" => Ok(Mnemonic::Tay),
+            "tya" => Ok(Mnemonic::Tya),
+            "tsx" => Ok(Mnemonic::Tsx),
+            "txs" => Ok(Mnemonic::Txs),
+            "pha" => Ok(Mnemonic::Pha),
+            "pla" => Ok(Mnemonic::Pla),
+            "php" => Ok(Mnemonic::Php),
+            "plp" => Ok(Mnemonic::Plp),
+            "jmp" => Ok(Mnemonic::Jmp),
+            "jsr" => Ok(Mnemonic::Jsr),
+            "rts" => Ok(Mnemonic::Rts),
+            "rti" => Ok(Mnemonic::Rti),
+            "clc" => Ok(Mnemonic::Clc),
+            "sec" => Ok(Mnemonic::Sec),
+            "cld" => Ok(Mnemonic::Cld),
+            "sed" => Ok(Mnemonic::Sed),
+            "cli" => Ok(Mnemonic::Cli),
+            "sei" => Ok(Mnemonic::Sei),
+            "clv" => Ok(Mnemonic::Clv),
+            "brk" => Ok(Mnemonic::Brk),
+            "nop" => Ok(Mnemonic::Nop),
             _ => Err(MnemonicErr::ConversionErr(src.to_string()).to_string()),
         }
     }
