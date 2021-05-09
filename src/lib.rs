@@ -384,9 +384,9 @@ generate_instructions!(
     rol_accumulator: Rol, Accumulator, RolAccumulator, 0x2a, 2,
     rol_zeropage: Rol, ZeroPage, RolZeroPage, 0x26, 5,
     rol_zeropage_indexed_with_x: Rol, ZeroPageIndexedWithX, RolZeroPageIndexedWithX, 0x36, 6,
-    ror_absolute: Ror, Absolute, ROrabsolute, 0x6e, 6,
-    ror_absolute_indexed_with_x: Ror, AbsoluteIndexedWithX, ROrabsoluteIndexedWithX, 0x7e, 7,
-    ror_acumulator: Ror, Accumulator, ROraccumulator, 0x6a, 2,
+    ror_absolute: Ror, Absolute, RorAbsolute, 0x6e, 6,
+    ror_absolute_indexed_with_x: Ror, AbsoluteIndexedWithX, RorAbsoluteIndexedWithX, 0x7e, 7,
+    ror_acumulator: Ror, Accumulator, RorAccumulator, 0x6a, 2,
     ror_zeropage: Ror, ZeroPage, RorZeroPage, 0x66, 5,
     ror_zeropage_indexed_with_x: Ror, ZeroPageIndexedWithX, RorZeroPageIndexedWithX, 0x76, 6,
     bcc_relative: Bcc, Relative, BccRelative, 0x90, 2,
@@ -598,9 +598,9 @@ pub enum InstructionVariant {
     RolAccumulator,
     RolZeroPage(u8),
     RolZeroPageIndexedWithX(u8),
-    ROrabsolute(u16),
-    ROrabsoluteIndexedWithX(u16),
-    ROraccumulator,
+    RorAbsolute(u16),
+    RorAbsoluteIndexedWithX(u16),
+    RorAccumulator,
     RorZeroPage(u8),
     RorZeroPageIndexedWithX(u8),
     RtiImplied,
@@ -997,13 +997,13 @@ impl std::convert::From<InstructionVariant> for Bytecode {
             InstructionVariant::RolZeroPageIndexedWithX(am) => {
                 Instruction::new(mnemonic::Rol, addressing_mode::ZeroPageIndexedWithX(am)).into()
             }
-            InstructionVariant::ROrabsolute(am) => {
+            InstructionVariant::RorAbsolute(am) => {
                 Instruction::new(mnemonic::Ror, addressing_mode::Absolute(am)).into()
             }
-            InstructionVariant::ROrabsoluteIndexedWithX(am) => {
+            InstructionVariant::RorAbsoluteIndexedWithX(am) => {
                 Instruction::new(mnemonic::Ror, addressing_mode::AbsoluteIndexedWithX(am)).into()
             }
-            InstructionVariant::ROraccumulator => {
+            InstructionVariant::RorAccumulator => {
                 Instruction::new(mnemonic::Ror, addressing_mode::Accumulator).into()
             }
             InstructionVariant::RorZeroPage(am) => {
@@ -1576,15 +1576,15 @@ impl std::convert::From<InstructionVariant>
                 mnemonic::Mnemonic::Rol,
                 addressing_mode::AddressingMode::ZeroPageIndexedWithX(am),
             ),
-            InstructionVariant::ROrabsolute(am) => (
+            InstructionVariant::RorAbsolute(am) => (
                 mnemonic::Mnemonic::Ror,
                 addressing_mode::AddressingMode::Absolute(am),
             ),
-            InstructionVariant::ROrabsoluteIndexedWithX(am) => (
+            InstructionVariant::RorAbsoluteIndexedWithX(am) => (
                 mnemonic::Mnemonic::Ror,
                 addressing_mode::AddressingMode::AbsoluteIndexedWithX(am),
             ),
-            InstructionVariant::ROraccumulator => (
+            InstructionVariant::RorAccumulator => (
                 mnemonic::Mnemonic::Ror,
                 addressing_mode::AddressingMode::Accumulator,
             ),
@@ -2049,12 +2049,12 @@ impl std::convert::TryFrom<(mnemonic::Mnemonic, addressing_mode::AddressingMode)
                 Ok(InstructionVariant::RolZeroPageIndexedWithX(am))
             }
             (Mnemonic::Ror, AddressingMode::Absolute(am)) => {
-                Ok(InstructionVariant::ROrabsolute(am))
+                Ok(InstructionVariant::RorAbsolute(am))
             }
             (Mnemonic::Ror, AddressingMode::AbsoluteIndexedWithX(am)) => {
-                Ok(InstructionVariant::ROrabsoluteIndexedWithX(am))
+                Ok(InstructionVariant::RorAbsoluteIndexedWithX(am))
             }
-            (Mnemonic::Ror, AddressingMode::Accumulator) => Ok(InstructionVariant::ROraccumulator),
+            (Mnemonic::Ror, AddressingMode::Accumulator) => Ok(InstructionVariant::RorAccumulator),
             (Mnemonic::Ror, AddressingMode::ZeroPage(am)) => {
                 Ok(InstructionVariant::RorZeroPage(am))
             }
