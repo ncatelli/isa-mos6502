@@ -566,9 +566,9 @@ pub enum AddressingMode {
     IndirectYIndexed(u8),
 }
 
-impl Into<Vec<u8>> for AddressingMode {
-    fn into(self) -> Vec<u8> {
-        match self {
+impl From<AddressingMode> for Vec<u8> {
+    fn from(src: AddressingMode) -> Vec<u8> {
+        match src {
             AddressingMode::Immediate(operand) => vec![operand],
             AddressingMode::Absolute(operand) => operand.to_le_bytes().to_vec(),
             AddressingMode::ZeroPage(operand) => vec![operand],
