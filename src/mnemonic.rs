@@ -19,8 +19,8 @@ macro_rules! generate_mnemonic_parser_and_offset {
     ($mnemonic:ty, $text:literal, $opcode:literal) => {
         impl ByteSized for $mnemonic {}
 
-        impl<'a> parcel::Parser<'a, &'a [u8], $mnemonic> for $mnemonic {
-            fn parse(&self, input: &'a [u8]) -> parcel::ParseResult<&'a [u8], $mnemonic> {
+        impl<'a> parcel::Parser<'a, &'a [(usize, u8)], $mnemonic> for $mnemonic {
+            fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], $mnemonic> {
                 parcel::map(
                     parcel::parsers::byte::expect_byte($opcode),
                     |_| <$mnemonic>::default()
@@ -28,8 +28,8 @@ macro_rules! generate_mnemonic_parser_and_offset {
             }
         }
 
-        impl<'a> parcel::Parser<'a, &'a [char], $mnemonic> for $mnemonic {
-            fn parse(&self, input: &'a [char]) -> parcel::ParseResult<&'a [char], $mnemonic> {
+        impl<'a> parcel::Parser<'a, &'a [(usize, char)], $mnemonic> for $mnemonic {
+            fn parse(&self, input: &'a [(usize, char)]) -> parcel::ParseResult<&'a [(usize, char)], $mnemonic> {
                 parcel::map(
                     parcel::parsers::character::expect_str($text),
                     |_| <$mnemonic>::default()
@@ -41,8 +41,8 @@ macro_rules! generate_mnemonic_parser_and_offset {
     ($mnemonic:ty, $text:literal, $( $opcode:literal ),* ) => {
         impl ByteSized for $mnemonic {}
 
-        impl<'a> parcel::Parser<'a, &'a [u8], $mnemonic> for $mnemonic {
-            fn parse(&self, input: &'a [u8]) -> parcel::ParseResult<&'a [u8], $mnemonic> {
+        impl<'a> parcel::Parser<'a, &'a [(usize, u8)], $mnemonic> for $mnemonic {
+            fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], $mnemonic> {
                 parcel::one_of(vec![
                     $(
                         parcel::parsers::byte::expect_byte($opcode),
@@ -53,8 +53,8 @@ macro_rules! generate_mnemonic_parser_and_offset {
             }
         }
 
-        impl<'a> parcel::Parser<'a, &'a [char], $mnemonic> for $mnemonic {
-            fn parse(&self, input: &'a [char]) -> parcel::ParseResult<&'a [char], $mnemonic> {
+        impl<'a> parcel::Parser<'a, &'a [(usize, char)], $mnemonic> for $mnemonic {
+            fn parse(&self, input: &'a [(usize, char)]) -> parcel::ParseResult<&'a [(usize, char)], $mnemonic> {
                 parcel::map(
                     parcel::parsers::character::expect_str($text),
                     |_| <$mnemonic>::default()

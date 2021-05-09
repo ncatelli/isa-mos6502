@@ -206,13 +206,13 @@ macro_rules! generate_instructions {
                 }
             }
 
-            impl<'a> parcel::Parser<'a, &'a [u8], $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>>
+            impl<'a> parcel::Parser<'a, &'a [(usize, u8)], $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>>
                 for $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>
             {
                 fn parse(
                     &self,
-                    input: &'a [u8],
-                ) -> parcel::ParseResult<&'a [u8], $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> {
+                    input: &'a [(usize, u8)],
+                ) -> parcel::ParseResult<&'a [(usize, u8)], $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> {
                     // If the expected opcode and addressing mode match, map it to a
                     // corresponding Instruction.
                     parcel::map(
@@ -280,7 +280,7 @@ macro_rules! generate_instructions {
                 $(
                     #[test]
                     fn $name() {
-                        let bytecode: [u8; 3] = [$opcode, 0x00, 0x00];
+                        let bytecode: Vec<(usize, u8)> = [$opcode, 0x00, 0x00].iter().copied().enumerate().collect();
                         assert_eq!(
                             $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()),
                             $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()).parse(&bytecode).unwrap().unwrap()

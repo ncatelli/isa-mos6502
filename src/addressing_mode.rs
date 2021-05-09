@@ -13,8 +13,8 @@ impl ByteSized for Absolute {
     }
 }
 
-impl<'a> Parser<'a, &'a [u8], Absolute> for Absolute {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Absolute> {
+impl<'a> Parser<'a, &'a [(usize, u8)], Absolute> for Absolute {
+    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Absolute> {
         parcel::take_n(any_byte(), 2)
             .map(|b| Absolute(u16::from_le_bytes([b[0], b[1]])))
             .parse(input)
@@ -58,8 +58,11 @@ impl ByteSized for AbsoluteIndexedWithX {
     }
 }
 
-impl<'a> Parser<'a, &'a [u8], AbsoluteIndexedWithX> for AbsoluteIndexedWithX {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], AbsoluteIndexedWithX> {
+impl<'a> Parser<'a, &'a [(usize, u8)], AbsoluteIndexedWithX> for AbsoluteIndexedWithX {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> ParseResult<&'a [(usize, u8)], AbsoluteIndexedWithX> {
         parcel::take_n(any_byte(), 2)
             .map(|b| AbsoluteIndexedWithX(u16::from_le_bytes([b[0], b[1]])))
             .parse(input)
@@ -103,8 +106,11 @@ impl ByteSized for AbsoluteIndexedWithY {
     }
 }
 
-impl<'a> Parser<'a, &'a [u8], AbsoluteIndexedWithY> for AbsoluteIndexedWithY {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], AbsoluteIndexedWithY> {
+impl<'a> Parser<'a, &'a [(usize, u8)], AbsoluteIndexedWithY> for AbsoluteIndexedWithY {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> ParseResult<&'a [(usize, u8)], AbsoluteIndexedWithY> {
         parcel::take_n(any_byte(), 2)
             .map(|b| AbsoluteIndexedWithY(u16::from_le_bytes([b[0], b[1]])))
             .parse(input)
@@ -148,9 +154,15 @@ impl ByteSized for Accumulator {
     }
 }
 
-impl<'a> Parser<'a, &'a [u8], Accumulator> for Accumulator {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Accumulator> {
-        Ok(MatchStatus::Match((input, Accumulator)))
+impl<'a> Parser<'a, &'a [(usize, u8)], Accumulator> for Accumulator {
+    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Accumulator> {
+        let start = input.get(0).map_or(0, |i| i.0);
+        let end = start;
+        Ok(MatchStatus::Match {
+            span: start..end,
+            remainder: &input[start..],
+            inner: Accumulator,
+        })
     }
 }
 
@@ -173,8 +185,8 @@ pub struct Immediate(pub u8);
 
 impl ByteSized for Immediate {}
 
-impl<'a> Parser<'a, &'a [u8], Immediate> for Immediate {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Immediate> {
+impl<'a> Parser<'a, &'a [(usize, u8)], Immediate> for Immediate {
+    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Immediate> {
         any_byte().map(Immediate).parse(input)
     }
 }
@@ -217,9 +229,15 @@ impl ByteSized for Implied {
     }
 }
 
-impl<'a> Parser<'a, &'a [u8], Implied> for Implied {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Implied> {
-        Ok(MatchStatus::Match((input, Implied)))
+impl<'a> Parser<'a, &'a [(usize, u8)], Implied> for Implied {
+    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Implied> {
+        let start = input.get(0).map_or(0, |i| i.0);
+        let end = start;
+        Ok(MatchStatus::Match {
+            span: start..end,
+            remainder: &input[start..],
+            inner: Implied,
+        })
     }
 }
 
@@ -246,8 +264,8 @@ impl ByteSized for Indirect {
     }
 }
 
-impl<'a> Parser<'a, &'a [u8], Indirect> for Indirect {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Indirect> {
+impl<'a> Parser<'a, &'a [(usize, u8)], Indirect> for Indirect {
+    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Indirect> {
         parcel::take_n(any_byte(), 2)
             .map(|b| Indirect(u16::from_le_bytes([b[0], b[1]])))
             .parse(input)
@@ -288,8 +306,8 @@ pub struct IndirectYIndexed(pub u8);
 
 impl ByteSized for IndirectYIndexed {}
 
-impl<'a> Parser<'a, &'a [u8], IndirectYIndexed> for IndirectYIndexed {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], IndirectYIndexed> {
+impl<'a> Parser<'a, &'a [(usize, u8)], IndirectYIndexed> for IndirectYIndexed {
+    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], IndirectYIndexed> {
         any_byte().map(IndirectYIndexed).parse(input)
     }
 }
@@ -328,8 +346,8 @@ pub struct XIndexedIndirect(pub u8);
 
 impl ByteSized for XIndexedIndirect {}
 
-impl<'a> Parser<'a, &'a [u8], XIndexedIndirect> for XIndexedIndirect {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], XIndexedIndirect> {
+impl<'a> Parser<'a, &'a [(usize, u8)], XIndexedIndirect> for XIndexedIndirect {
+    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], XIndexedIndirect> {
         any_byte().map(XIndexedIndirect).parse(input)
     }
 }
@@ -368,8 +386,8 @@ pub struct Relative(pub i8);
 
 impl ByteSized for Relative {}
 
-impl<'a> Parser<'a, &'a [u8], Relative> for Relative {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], Relative> {
+impl<'a> Parser<'a, &'a [(usize, u8)], Relative> for Relative {
+    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Relative> {
         any_byte()
             .map(|b| {
                 let offset = unsafe { std::mem::transmute::<u8, i8>(b) };
@@ -413,8 +431,8 @@ pub struct ZeroPage(pub u8);
 impl CycleCost for ZeroPage {}
 impl ByteSized for ZeroPage {}
 
-impl<'a> Parser<'a, &'a [u8], ZeroPage> for ZeroPage {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], ZeroPage> {
+impl<'a> Parser<'a, &'a [(usize, u8)], ZeroPage> for ZeroPage {
+    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], ZeroPage> {
         any_byte().map(ZeroPage).parse(input)
     }
 }
@@ -452,8 +470,11 @@ pub struct ZeroPageIndexedWithX(pub u8);
 
 impl ByteSized for ZeroPageIndexedWithX {}
 
-impl<'a> Parser<'a, &'a [u8], ZeroPageIndexedWithX> for ZeroPageIndexedWithX {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], ZeroPageIndexedWithX> {
+impl<'a> Parser<'a, &'a [(usize, u8)], ZeroPageIndexedWithX> for ZeroPageIndexedWithX {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> ParseResult<&'a [(usize, u8)], ZeroPageIndexedWithX> {
         any_byte().map(ZeroPageIndexedWithX).parse(input)
     }
 }
@@ -491,8 +512,11 @@ pub struct ZeroPageIndexedWithY(pub u8);
 
 impl ByteSized for ZeroPageIndexedWithY {}
 
-impl<'a> Parser<'a, &'a [u8], ZeroPageIndexedWithY> for ZeroPageIndexedWithY {
-    fn parse(&self, input: &'a [u8]) -> ParseResult<&'a [u8], ZeroPageIndexedWithY> {
+impl<'a> Parser<'a, &'a [(usize, u8)], ZeroPageIndexedWithY> for ZeroPageIndexedWithY {
+    fn parse(
+        &self,
+        input: &'a [(usize, u8)],
+    ) -> ParseResult<&'a [(usize, u8)], ZeroPageIndexedWithY> {
         any_byte().map(ZeroPageIndexedWithY).parse(input)
     }
 }
