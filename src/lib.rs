@@ -645,7 +645,6 @@ impl InstructionVariant {
         m: mnemonic::Mnemonic,
         am: addressing_mode::AddressingMode,
     ) -> Result<Self, InstructionErr> {
-        use std::convert::TryFrom;
         <InstructionVariant>::try_from((m, am))
     }
 }
