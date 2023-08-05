@@ -39,6 +39,7 @@ pub trait ByteSized {
 }
 
 pub mod addressing_mode;
+pub mod bit_decoder;
 pub mod mnemonic;
 
 type Bytecode = Vec<u8>;
