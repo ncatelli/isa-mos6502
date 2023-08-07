@@ -1,6 +1,4 @@
-extern crate parcel;
 use crate::{ByteSized, CycleCost};
-use parcel::{parsers::byte::any_byte, MatchStatus, ParseResult, Parser};
 
 ///  Absolute addressing mode represents a u16 represented constant address to a
 /// location in memory for the operand value.
@@ -10,14 +8,6 @@ pub struct Absolute(pub u16);
 impl ByteSized for Absolute {
     fn byte_size(&self) -> usize {
         2
-    }
-}
-
-impl<'a> Parser<'a, &'a [(usize, u8)], Absolute> for Absolute {
-    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Absolute> {
-        parcel::take_n(any_byte(), 2)
-            .map(|b| Absolute(u16::from_le_bytes([b[0], b[1]])))
-            .parse(input)
     }
 }
 
@@ -58,17 +48,6 @@ impl ByteSized for AbsoluteIndexedWithX {
     }
 }
 
-impl<'a> Parser<'a, &'a [(usize, u8)], AbsoluteIndexedWithX> for AbsoluteIndexedWithX {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> ParseResult<&'a [(usize, u8)], AbsoluteIndexedWithX> {
-        parcel::take_n(any_byte(), 2)
-            .map(|b| AbsoluteIndexedWithX(u16::from_le_bytes([b[0], b[1]])))
-            .parse(input)
-    }
-}
-
 impl AbsoluteIndexedWithX {
     /// Unpacks the enclosed address from a AbsoluteIndexedWithX addressing mode
     /// into a corresponding u16 address.
@@ -103,17 +82,6 @@ pub struct AbsoluteIndexedWithY(pub u16);
 impl ByteSized for AbsoluteIndexedWithY {
     fn byte_size(&self) -> usize {
         2
-    }
-}
-
-impl<'a> Parser<'a, &'a [(usize, u8)], AbsoluteIndexedWithY> for AbsoluteIndexedWithY {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> ParseResult<&'a [(usize, u8)], AbsoluteIndexedWithY> {
-        parcel::take_n(any_byte(), 2)
-            .map(|b| AbsoluteIndexedWithY(u16::from_le_bytes([b[0], b[1]])))
-            .parse(input)
     }
 }
 
@@ -154,18 +122,6 @@ impl ByteSized for Accumulator {
     }
 }
 
-impl<'a> Parser<'a, &'a [(usize, u8)], Accumulator> for Accumulator {
-    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Accumulator> {
-        let start = input.first().map_or(0, |i| i.0);
-        let end = start;
-        Ok(MatchStatus::Match {
-            span: start..end,
-            remainder: &input[start..],
-            inner: Accumulator,
-        })
-    }
-}
-
 impl From<Accumulator> for Vec<u8> {
     fn from(_: Accumulator) -> Self {
         vec![]
@@ -184,12 +140,6 @@ impl From<Accumulator> for AddressingMode {
 pub struct Immediate(pub u8);
 
 impl ByteSized for Immediate {}
-
-impl<'a> Parser<'a, &'a [(usize, u8)], Immediate> for Immediate {
-    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Immediate> {
-        any_byte().map(Immediate).parse(input)
-    }
-}
 
 impl Immediate {
     /// Unpacks the enclosed value from an Immediate into a corresponding u8
@@ -229,18 +179,6 @@ impl ByteSized for Implied {
     }
 }
 
-impl<'a> Parser<'a, &'a [(usize, u8)], Implied> for Implied {
-    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Implied> {
-        let start = input.first().map_or(0, |i| i.0);
-        let end = start;
-        Ok(MatchStatus::Match {
-            span: start..end,
-            remainder: &input[start..],
-            inner: Implied,
-        })
-    }
-}
-
 impl From<Implied> for Vec<u8> {
     fn from(_: Implied) -> Self {
         vec![]
@@ -261,14 +199,6 @@ pub struct Indirect(pub u16);
 impl ByteSized for Indirect {
     fn byte_size(&self) -> usize {
         2
-    }
-}
-
-impl<'a> Parser<'a, &'a [(usize, u8)], Indirect> for Indirect {
-    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Indirect> {
-        parcel::take_n(any_byte(), 2)
-            .map(|b| Indirect(u16::from_le_bytes([b[0], b[1]])))
-            .parse(input)
     }
 }
 
@@ -306,12 +236,6 @@ pub struct IndirectYIndexed(pub u8);
 
 impl ByteSized for IndirectYIndexed {}
 
-impl<'a> Parser<'a, &'a [(usize, u8)], IndirectYIndexed> for IndirectYIndexed {
-    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], IndirectYIndexed> {
-        any_byte().map(IndirectYIndexed).parse(input)
-    }
-}
-
 impl IndirectYIndexed {
     /// Unpacks the enclosed address from a IndirectYIndexed addressing mode
     /// into a corresponding u8 address.
@@ -345,12 +269,6 @@ impl From<IndirectYIndexed> for AddressingMode {
 pub struct XIndexedIndirect(pub u8);
 
 impl ByteSized for XIndexedIndirect {}
-
-impl<'a> Parser<'a, &'a [(usize, u8)], XIndexedIndirect> for XIndexedIndirect {
-    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], XIndexedIndirect> {
-        any_byte().map(XIndexedIndirect).parse(input)
-    }
-}
 
 impl XIndexedIndirect {
     /// Unpacks the enclosed address from a XIndexedIndirect addressing mode
@@ -386,17 +304,6 @@ pub struct Relative(pub i8);
 
 impl ByteSized for Relative {}
 
-impl<'a> Parser<'a, &'a [(usize, u8)], Relative> for Relative {
-    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Relative> {
-        any_byte()
-            .map(|b| {
-                let offset = unsafe { std::mem::transmute::<u8, i8>(b) };
-                Relative(offset)
-            })
-            .parse(input)
-    }
-}
-
 impl Relative {
     /// Unpacks the enclosed address from a Relative addressing mode into a
     /// corresponding i8 address.
@@ -431,12 +338,6 @@ pub struct ZeroPage(pub u8);
 impl CycleCost for ZeroPage {}
 impl ByteSized for ZeroPage {}
 
-impl<'a> Parser<'a, &'a [(usize, u8)], ZeroPage> for ZeroPage {
-    fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], ZeroPage> {
-        any_byte().map(ZeroPage).parse(input)
-    }
-}
-
 impl ZeroPage {
     /// Unpacks the enclosed address from a Zeropage into a corresponding u8
     /// address.
@@ -470,15 +371,6 @@ pub struct ZeroPageIndexedWithX(pub u8);
 
 impl ByteSized for ZeroPageIndexedWithX {}
 
-impl<'a> Parser<'a, &'a [(usize, u8)], ZeroPageIndexedWithX> for ZeroPageIndexedWithX {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> ParseResult<&'a [(usize, u8)], ZeroPageIndexedWithX> {
-        any_byte().map(ZeroPageIndexedWithX).parse(input)
-    }
-}
-
 impl ZeroPageIndexedWithX {
     /// Unpacks the enclosed address from a ZeropageIndexedWithX into a
     /// corresponding u8 address.
@@ -511,15 +403,6 @@ impl From<ZeroPageIndexedWithX> for AddressingMode {
 pub struct ZeroPageIndexedWithY(pub u8);
 
 impl ByteSized for ZeroPageIndexedWithY {}
-
-impl<'a> Parser<'a, &'a [(usize, u8)], ZeroPageIndexedWithY> for ZeroPageIndexedWithY {
-    fn parse(
-        &self,
-        input: &'a [(usize, u8)],
-    ) -> ParseResult<&'a [(usize, u8)], ZeroPageIndexedWithY> {
-        any_byte().map(ZeroPageIndexedWithY).parse(input)
-    }
-}
 
 impl ZeroPageIndexedWithY {
     /// Unpacks the enclosed address from a ZeropageIndexedWithY into a
@@ -566,6 +449,26 @@ pub enum AddressingMode {
     IndirectYIndexed(u8),
 }
 
+impl AddressingMode {
+    pub fn to_addressing_mode_type(&self) -> AddressingModeType {
+        match self {
+            AddressingMode::Accumulator => AddressingModeType::Accumulator,
+            AddressingMode::Implied => AddressingModeType::Implied,
+            AddressingMode::Immediate(_) => AddressingModeType::Immediate,
+            AddressingMode::Absolute(_) => AddressingModeType::Absolute,
+            AddressingMode::ZeroPage(_) => AddressingModeType::ZeroPage,
+            AddressingMode::Relative(_) => AddressingModeType::Relative,
+            AddressingMode::Indirect(_) => AddressingModeType::Indirect,
+            AddressingMode::AbsoluteIndexedWithX(_) => AddressingModeType::AbsoluteIndexedWithX,
+            AddressingMode::AbsoluteIndexedWithY(_) => AddressingModeType::AbsoluteIndexedWithY,
+            AddressingMode::ZeroPageIndexedWithX(_) => AddressingModeType::ZeroPageIndexedWithX,
+            AddressingMode::ZeroPageIndexedWithY(_) => AddressingModeType::ZeroPageIndexedWithY,
+            AddressingMode::XIndexedIndirect(_) => AddressingModeType::XIndexedIndirect,
+            AddressingMode::IndirectYIndexed(_) => AddressingModeType::IndirectYIndexed,
+        }
+    }
+}
+
 impl From<AddressingMode> for Vec<u8> {
     fn from(src: AddressingMode) -> Vec<u8> {
         match src {
@@ -590,14 +493,7 @@ impl From<AddressingMode> for Vec<u8> {
 
 impl crate::ByteSized for AddressingMode {
     fn byte_size(&self) -> usize {
-        match self {
-            AddressingMode::Accumulator | AddressingMode::Implied => 0,
-            AddressingMode::Absolute(_)
-            | AddressingMode::Indirect(_)
-            | AddressingMode::AbsoluteIndexedWithX(_)
-            | AddressingMode::AbsoluteIndexedWithY(_) => 2,
-            _ => 1,
-        }
+        self.to_addressing_mode_type().byte_size()
     }
 }
 
@@ -623,6 +519,19 @@ pub enum AddressingModeType {
 impl std::fmt::Display for AddressingModeType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl crate::ByteSized for AddressingModeType {
+    fn byte_size(&self) -> usize {
+        match self {
+            Self::Accumulator | Self::Implied => 0,
+            Self::Absolute
+            | Self::Indirect
+            | Self::AbsoluteIndexedWithX
+            | Self::AbsoluteIndexedWithY => 2,
+            _ => 1,
+        }
     }
 }
 

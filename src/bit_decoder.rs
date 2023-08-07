@@ -84,12 +84,6 @@ enum AType {
     Seven,
 }
 
-impl AType {
-    pub fn to_u8(&self) -> u8 {
-        (*self) as u8
-    }
-}
-
 #[derive(Debug, Clone, Copy)]
 enum BType {
     Zero,
@@ -102,23 +96,11 @@ enum BType {
     Seven,
 }
 
-impl BType {
-    pub(crate) fn to_u8(&self) -> u8 {
-        (*self) as u8
-    }
-}
-
 #[derive(Debug, Clone, Copy)]
 enum CType {
     Zero,
     One,
     Two,
-}
-
-impl CType {
-    pub(crate) fn to_u8(&self) -> u8 {
-        (*self) as u8
-    }
 }
 
 const fn mnemonic_from_types(a_type: AType, c_type: CType) -> Option<crate::mnemonic::Mnemonic> {

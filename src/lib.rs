@@ -207,30 +207,13 @@ macro_rules! generate_instructions {
                 }
             }
 
-            impl<'a> parcel::Parser<'a, &'a [(usize, u8)], $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>>
-                for $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>
-            {
-                fn parse(
-                    &self,
-                    input: &'a [(usize, u8)],
-                ) -> parcel::ParseResult<&'a [(usize, u8)], $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> {
-                    // If the expected opcode and addressing mode match, map it to a
-                    // corresponding Instruction.
-                    parcel::map(
-                        parcel::and_then(parcel::parsers::byte::expect_byte($opcode), |_| <$crate::addressing_mode::$am>::default()),
-                        |am| $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), am),
-                    )
-                    .parse(input)
-                }
-            }
-
             // Covert the addressing mode contests to a little-endian bytecode
             // vector and chain that to a vector containing the instructions
             // opcode.
             impl std::convert::From<$crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>> for Bytecode {
                 fn from(src: $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>) -> Self {
                     let am_bytecode: Vec<u8> = src.addressing_mode.into();
-                    vec![$opcode].into_iter().chain(
+                    [$opcode].into_iter().chain(
                         am_bytecode.into_iter()
                     ).collect()
                 }
@@ -276,20 +259,6 @@ macro_rules! generate_instructions {
         // General parser tests
         #[cfg(test)]
         mod tests {
-            mod parser {
-                use parcel::prelude::v1::Parser;
-                $(
-                    #[test]
-                    fn $name() {
-                        let bytecode: Vec<(usize, u8)> = [$opcode, 0x00, 0x00].iter().copied().enumerate().collect();
-                        assert_eq!(
-                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()),
-                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()).parse(&bytecode).unwrap().unwrap()
-                        )
-                    }
-                )*
-            }
-
             mod conversion {
                 #[test]
                 fn conversion_from_generic_to_concrete() {
@@ -2137,6 +2106,98 @@ impl std::convert::TryFrom<(mnemonic::Mnemonic, addressing_mode::AddressingMode)
             (Mnemonic::Txs, AddressingMode::Implied) => Ok(InstructionVariant::TxsImplied),
             (Mnemonic::Tya, AddressingMode::Implied) => Ok(InstructionVariant::TyaImplied),
             _ => Err(InstructionErr::InvalidInstruction(src.0, src.1.into())),
+        }
+    }
+}
+
+pub fn parse_instruction(mut byte_stream: impl Iterator<Item = u8>) -> Option<InstructionVariant> {
+    use addressing_mode::{AddressingMode, AddressingModeType};
+
+    let opcode = byte_stream.next().map(bit_decoder::Opcode::from)?;
+    let (mnemonic, am) = bit_decoder::decode(&opcode)?;
+
+    match am {
+        AddressingModeType::Accumulator => (mnemonic, AddressingMode::Accumulator).try_into().ok(),
+        AddressingModeType::Implied => (mnemonic, AddressingMode::Implied).try_into().ok(),
+        AddressingModeType::Immediate => {
+            let data = byte_stream.next()?;
+            (mnemonic, AddressingMode::Immediate(data)).try_into().ok()
+        }
+        AddressingModeType::ZeroPage => {
+            let data = byte_stream.next()?;
+            (mnemonic, AddressingMode::ZeroPage(data)).try_into().ok()
+        }
+        AddressingModeType::Relative => {
+            let data = byte_stream.next().map(|data| data as i8)?;
+            (mnemonic, AddressingMode::Relative(data)).try_into().ok()
+        }
+        AddressingModeType::ZeroPageIndexedWithX => {
+            let data = byte_stream.next()?;
+            (mnemonic, AddressingMode::ZeroPageIndexedWithX(data))
+                .try_into()
+                .ok()
+        }
+        AddressingModeType::ZeroPageIndexedWithY => {
+            let data = byte_stream.next()?;
+            (mnemonic, AddressingMode::ZeroPageIndexedWithY(data))
+                .try_into()
+                .ok()
+        }
+        AddressingModeType::XIndexedIndirect => {
+            let data = byte_stream.next()?;
+            (mnemonic, AddressingMode::XIndexedIndirect(data))
+                .try_into()
+                .ok()
+        }
+        AddressingModeType::IndirectYIndexed => {
+            let data = byte_stream.next()?;
+            (mnemonic, AddressingMode::IndirectYIndexed(data))
+                .try_into()
+                .ok()
+        }
+        AddressingModeType::Indirect => {
+            let lower = byte_stream.next()?;
+            let upper = byte_stream.next()?;
+
+            (
+                mnemonic,
+                AddressingMode::Indirect(u16::from_le_bytes([lower, upper])),
+            )
+                .try_into()
+                .ok()
+        }
+        AddressingModeType::Absolute => {
+            let lower = byte_stream.next()?;
+            let upper = byte_stream.next()?;
+
+            (
+                mnemonic,
+                AddressingMode::Absolute(u16::from_le_bytes([lower, upper])),
+            )
+                .try_into()
+                .ok()
+        }
+        AddressingModeType::AbsoluteIndexedWithX => {
+            let lower = byte_stream.next()?;
+            let upper = byte_stream.next()?;
+
+            (
+                mnemonic,
+                AddressingMode::AbsoluteIndexedWithX(u16::from_le_bytes([lower, upper])),
+            )
+                .try_into()
+                .ok()
+        }
+        AddressingModeType::AbsoluteIndexedWithY => {
+            let lower = byte_stream.next()?;
+            let upper = byte_stream.next()?;
+
+            (
+                mnemonic,
+                AddressingMode::AbsoluteIndexedWithY(u16::from_le_bytes([lower, upper])),
+            )
+                .try_into()
+                .ok()
         }
     }
 }
