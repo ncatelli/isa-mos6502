@@ -2116,44 +2116,36 @@ pub fn parse_instruction(mut byte_stream: impl Iterator<Item = u8>) -> Option<In
     let opcode = byte_stream.next().map(bit_decoder::Opcode::from)?;
     let (mnemonic, am) = bit_decoder::decode(&opcode)?;
 
-    match am {
-        AddressingModeType::Accumulator => (mnemonic, AddressingMode::Accumulator).try_into().ok(),
-        AddressingModeType::Implied => (mnemonic, AddressingMode::Implied).try_into().ok(),
+    let variant_components = match am {
+        AddressingModeType::Accumulator => (mnemonic, AddressingMode::Accumulator),
+        AddressingModeType::Implied => (mnemonic, AddressingMode::Implied),
         AddressingModeType::Immediate => {
             let data = byte_stream.next()?;
-            (mnemonic, AddressingMode::Immediate(data)).try_into().ok()
+            (mnemonic, AddressingMode::Immediate(data))
         }
         AddressingModeType::ZeroPage => {
             let data = byte_stream.next()?;
-            (mnemonic, AddressingMode::ZeroPage(data)).try_into().ok()
+            (mnemonic, AddressingMode::ZeroPage(data))
         }
         AddressingModeType::Relative => {
             let data = byte_stream.next().map(|data| data as i8)?;
-            (mnemonic, AddressingMode::Relative(data)).try_into().ok()
+            (mnemonic, AddressingMode::Relative(data))
         }
         AddressingModeType::ZeroPageIndexedWithX => {
             let data = byte_stream.next()?;
             (mnemonic, AddressingMode::ZeroPageIndexedWithX(data))
-                .try_into()
-                .ok()
         }
         AddressingModeType::ZeroPageIndexedWithY => {
             let data = byte_stream.next()?;
             (mnemonic, AddressingMode::ZeroPageIndexedWithY(data))
-                .try_into()
-                .ok()
         }
         AddressingModeType::XIndexedIndirect => {
             let data = byte_stream.next()?;
             (mnemonic, AddressingMode::XIndexedIndirect(data))
-                .try_into()
-                .ok()
         }
         AddressingModeType::IndirectYIndexed => {
             let data = byte_stream.next()?;
             (mnemonic, AddressingMode::IndirectYIndexed(data))
-                .try_into()
-                .ok()
         }
         AddressingModeType::Indirect => {
             let lower = byte_stream.next()?;
@@ -2163,8 +2155,6 @@ pub fn parse_instruction(mut byte_stream: impl Iterator<Item = u8>) -> Option<In
                 mnemonic,
                 AddressingMode::Indirect(u16::from_le_bytes([lower, upper])),
             )
-                .try_into()
-                .ok()
         }
         AddressingModeType::Absolute => {
             let lower = byte_stream.next()?;
@@ -2174,8 +2164,6 @@ pub fn parse_instruction(mut byte_stream: impl Iterator<Item = u8>) -> Option<In
                 mnemonic,
                 AddressingMode::Absolute(u16::from_le_bytes([lower, upper])),
             )
-                .try_into()
-                .ok()
         }
         AddressingModeType::AbsoluteIndexedWithX => {
             let lower = byte_stream.next()?;
@@ -2185,8 +2173,6 @@ pub fn parse_instruction(mut byte_stream: impl Iterator<Item = u8>) -> Option<In
                 mnemonic,
                 AddressingMode::AbsoluteIndexedWithX(u16::from_le_bytes([lower, upper])),
             )
-                .try_into()
-                .ok()
         }
         AddressingModeType::AbsoluteIndexedWithY => {
             let lower = byte_stream.next()?;
@@ -2196,8 +2182,8 @@ pub fn parse_instruction(mut byte_stream: impl Iterator<Item = u8>) -> Option<In
                 mnemonic,
                 AddressingMode::AbsoluteIndexedWithY(u16::from_le_bytes([lower, upper])),
             )
-                .try_into()
-                .ok()
         }
-    }
+    };
+
+    variant_components.try_into().ok()
 }
