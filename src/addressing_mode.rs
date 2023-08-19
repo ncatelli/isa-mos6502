@@ -566,6 +566,26 @@ pub enum AddressingMode {
     IndirectYIndexed(u8),
 }
 
+impl AddressingMode {
+    pub fn to_addressing_mode_type(&self) -> AddressingModeType {
+        match self {
+            AddressingMode::Accumulator => AddressingModeType::Accumulator,
+            AddressingMode::Implied => AddressingModeType::Implied,
+            AddressingMode::Immediate(_) => AddressingModeType::Immediate,
+            AddressingMode::Absolute(_) => AddressingModeType::Absolute,
+            AddressingMode::ZeroPage(_) => AddressingModeType::ZeroPage,
+            AddressingMode::Relative(_) => AddressingModeType::Relative,
+            AddressingMode::Indirect(_) => AddressingModeType::Indirect,
+            AddressingMode::AbsoluteIndexedWithX(_) => AddressingModeType::AbsoluteIndexedWithX,
+            AddressingMode::AbsoluteIndexedWithY(_) => AddressingModeType::AbsoluteIndexedWithY,
+            AddressingMode::ZeroPageIndexedWithX(_) => AddressingModeType::ZeroPageIndexedWithX,
+            AddressingMode::ZeroPageIndexedWithY(_) => AddressingModeType::ZeroPageIndexedWithY,
+            AddressingMode::XIndexedIndirect(_) => AddressingModeType::XIndexedIndirect,
+            AddressingMode::IndirectYIndexed(_) => AddressingModeType::IndirectYIndexed,
+        }
+    }
+}
+
 impl From<AddressingMode> for Vec<u8> {
     fn from(src: AddressingMode) -> Vec<u8> {
         match src {
