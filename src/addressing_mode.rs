@@ -156,7 +156,7 @@ impl ByteSized for Accumulator {
 
 impl<'a> Parser<'a, &'a [(usize, u8)], Accumulator> for Accumulator {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Accumulator> {
-        let start = input.get(0).map_or(0, |i| i.0);
+        let start = input.first().map_or(0, |i| i.0);
         let end = start;
         Ok(MatchStatus::Match {
             span: start..end,
@@ -231,7 +231,7 @@ impl ByteSized for Implied {
 
 impl<'a> Parser<'a, &'a [(usize, u8)], Implied> for Implied {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Implied> {
-        let start = input.get(0).map_or(0, |i| i.0);
+        let start = input.first().map_or(0, |i| i.0);
         let end = start;
         Ok(MatchStatus::Match {
             span: start..end,

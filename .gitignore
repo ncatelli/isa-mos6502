@@ -16,3 +16,8 @@ Cargo.lock
 
 /target
 #Cargo.lock
+
+# semantic-release dependencies
+/node_modules
+/package.json
+/package-lock.json
