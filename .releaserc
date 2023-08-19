@@ -1,6 +1,7 @@
 {
 	"branches": [
-		"main"
+		"main",
+		"feat/35/decode-using-bit-segments"
 	],
 	"plugins": [
 		"@semantic-release/commit-analyzer",
