@@ -1,5 +1,9 @@
+#[cfg(feature = "parcel")]
 extern crate parcel;
+
 use crate::{ByteSized, CycleCost};
+
+#[cfg(feature = "parcel")]
 use parcel::{parsers::byte::any_byte, MatchStatus, ParseResult, Parser};
 
 ///  Absolute addressing mode represents a u16 represented constant address to a
@@ -13,6 +17,7 @@ impl ByteSized for Absolute {
     }
 }
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], Absolute> for Absolute {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Absolute> {
         parcel::take_n(any_byte(), 2)
@@ -58,6 +63,7 @@ impl ByteSized for AbsoluteIndexedWithX {
     }
 }
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], AbsoluteIndexedWithX> for AbsoluteIndexedWithX {
     fn parse(
         &self,
@@ -106,6 +112,7 @@ impl ByteSized for AbsoluteIndexedWithY {
     }
 }
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], AbsoluteIndexedWithY> for AbsoluteIndexedWithY {
     fn parse(
         &self,
@@ -154,6 +161,7 @@ impl ByteSized for Accumulator {
     }
 }
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], Accumulator> for Accumulator {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Accumulator> {
         let start = input.first().map_or(0, |i| i.0);
@@ -185,6 +193,7 @@ pub struct Immediate(pub u8);
 
 impl ByteSized for Immediate {}
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], Immediate> for Immediate {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Immediate> {
         any_byte().map(Immediate).parse(input)
@@ -229,6 +238,7 @@ impl ByteSized for Implied {
     }
 }
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], Implied> for Implied {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Implied> {
         let start = input.first().map_or(0, |i| i.0);
@@ -264,6 +274,7 @@ impl ByteSized for Indirect {
     }
 }
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], Indirect> for Indirect {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Indirect> {
         parcel::take_n(any_byte(), 2)
@@ -306,6 +317,7 @@ pub struct IndirectYIndexed(pub u8);
 
 impl ByteSized for IndirectYIndexed {}
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], IndirectYIndexed> for IndirectYIndexed {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], IndirectYIndexed> {
         any_byte().map(IndirectYIndexed).parse(input)
@@ -346,6 +358,7 @@ pub struct XIndexedIndirect(pub u8);
 
 impl ByteSized for XIndexedIndirect {}
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], XIndexedIndirect> for XIndexedIndirect {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], XIndexedIndirect> {
         any_byte().map(XIndexedIndirect).parse(input)
@@ -386,6 +399,7 @@ pub struct Relative(pub i8);
 
 impl ByteSized for Relative {}
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], Relative> for Relative {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], Relative> {
         any_byte()
@@ -431,6 +445,7 @@ pub struct ZeroPage(pub u8);
 impl CycleCost for ZeroPage {}
 impl ByteSized for ZeroPage {}
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], ZeroPage> for ZeroPage {
     fn parse(&self, input: &'a [(usize, u8)]) -> ParseResult<&'a [(usize, u8)], ZeroPage> {
         any_byte().map(ZeroPage).parse(input)
@@ -470,6 +485,7 @@ pub struct ZeroPageIndexedWithX(pub u8);
 
 impl ByteSized for ZeroPageIndexedWithX {}
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], ZeroPageIndexedWithX> for ZeroPageIndexedWithX {
     fn parse(
         &self,
@@ -512,6 +528,7 @@ pub struct ZeroPageIndexedWithY(pub u8);
 
 impl ByteSized for ZeroPageIndexedWithY {}
 
+#[cfg(feature = "parcel")]
 impl<'a> Parser<'a, &'a [(usize, u8)], ZeroPageIndexedWithY> for ZeroPageIndexedWithY {
     fn parse(
         &self,

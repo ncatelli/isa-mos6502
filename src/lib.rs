@@ -208,6 +208,7 @@ macro_rules! generate_instructions {
                 }
             }
 
+            #[cfg(feature = "parcel")]
             impl<'a> parcel::Parser<'a, &'a [(usize, u8)], $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>>
                 for $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>
             {
@@ -278,14 +279,18 @@ macro_rules! generate_instructions {
         #[cfg(test)]
         mod tests {
             mod parser {
+                #[cfg(feature = "parcel")]
                 use parcel::prelude::v1::Parser;
                 $(
                     #[test]
                     fn $name() {
                         let bytecode = [$opcode, 0x00, 0x00];
-                        let enumerated_bytes: Vec<(usize, u8)> = bytecode.iter().copied().enumerate().collect();
                         let expected = $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default());
 
+                        #[cfg(feature = "parcel")]
+                        let enumerated_bytes: Vec<(usize, u8)> = bytecode.iter().copied().enumerate().collect();
+
+                        #[cfg(feature = "parcel")]
                         // assert parcel parse matches expected
                         assert_eq!(
                             expected,
