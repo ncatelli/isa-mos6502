@@ -282,11 +282,20 @@ macro_rules! generate_instructions {
                 $(
                     #[test]
                     fn $name() {
-                        let bytecode: Vec<(usize, u8)> = [$opcode, 0x00, 0x00].iter().copied().enumerate().collect();
+                        let bytecode = [$opcode, 0x00, 0x00];
+                        let enumerated_bytes: Vec<(usize, u8)> = bytecode.iter().copied().enumerate().collect();
+                        let expected = $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default());
+
+                        // assert parcel parse matches expected
                         assert_eq!(
-                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()),
-                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()).parse(&bytecode).unwrap().unwrap()
-                        )
+                            expected,
+                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()).parse(&enumerated_bytes).unwrap().unwrap()
+                        );
+
+                        // assert decoded bytes matches parsed bytes;
+                        let decoded = $crate::parse_instruction(&bytecode);
+                        assert_eq!(decoded, Some(expected.into()));
+
                     }
                 )*
             }
@@ -2143,77 +2152,84 @@ impl std::convert::TryFrom<(mnemonic::Mnemonic, addressing_mode::AddressingMode)
     }
 }
 
-pub fn parse_instruction(mut byte_stream: impl Iterator<Item = u8>) -> Option<InstructionVariant> {
+pub fn parse_instruction(bytes: impl AsRef<[u8]>) -> Option<InstructionVariant> {
     use addressing_mode::{AddressingMode, AddressingModeType};
 
-    let opcode = byte_stream.next().map(bit_decoder::Opcode::from)?;
+    // An instructions little endian lower byte will be first after the opcode.
+    const LOWER_BYTE_OFFSET: usize = 1;
+    // An instructions little endian upper byte will be second after the opcode.
+    const UPPER_BYTE_OFFSET: usize = 2;
+
+    let bytes = bytes.as_ref();
+
+    let opcode = bytes.first().copied().map(bit_decoder::Opcode::from)?;
     let (mnemonic, am) = bit_decoder::decode(&opcode)?;
 
     let variant_components = match am {
         AddressingModeType::Accumulator => (mnemonic, AddressingMode::Accumulator),
         AddressingModeType::Implied => (mnemonic, AddressingMode::Implied),
         AddressingModeType::Immediate => {
-            let data = byte_stream.next()?;
-            (mnemonic, AddressingMode::Immediate(data))
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::Immediate(*data))
         }
         AddressingModeType::ZeroPage => {
-            let data = byte_stream.next()?;
-            (mnemonic, AddressingMode::ZeroPage(data))
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::ZeroPage(*data))
         }
         AddressingModeType::Relative => {
-            let data = byte_stream.next().map(|data| data as i8)?;
+            let data = bytes.get(LOWER_BYTE_OFFSET).map(|&data| data as i8)?;
             (mnemonic, AddressingMode::Relative(data))
         }
         AddressingModeType::ZeroPageIndexedWithX => {
-            let data = byte_stream.next()?;
-            (mnemonic, AddressingMode::ZeroPageIndexedWithX(data))
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::ZeroPageIndexedWithX(*data))
         }
         AddressingModeType::ZeroPageIndexedWithY => {
-            let data = byte_stream.next()?;
-            (mnemonic, AddressingMode::ZeroPageIndexedWithY(data))
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::ZeroPageIndexedWithY(*data))
         }
         AddressingModeType::XIndexedIndirect => {
-            let data = byte_stream.next()?;
-            (mnemonic, AddressingMode::XIndexedIndirect(data))
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::XIndexedIndirect(*data))
         }
         AddressingModeType::IndirectYIndexed => {
-            let data = byte_stream.next()?;
-            (mnemonic, AddressingMode::IndirectYIndexed(data))
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::IndirectYIndexed(*data))
         }
         AddressingModeType::Indirect => {
-            let lower = byte_stream.next()?;
-            let upper = byte_stream.next()?;
+            let lower = bytes.get(LOWER_BYTE_OFFSET)?;
+            let upper = bytes.get(UPPER_BYTE_OFFSET)?;
 
             (
                 mnemonic,
-                AddressingMode::Indirect(u16::from_le_bytes([lower, upper])),
+                AddressingMode::Indirect(u16::from_le_bytes([*lower, *upper])),
             )
         }
         AddressingModeType::Absolute => {
-            let lower = byte_stream.next()?;
-            let upper = byte_stream.next()?;
+            let lower = bytes.get(LOWER_BYTE_OFFSET)?;
+            let upper = bytes.get(UPPER_BYTE_OFFSET)?;
 
             (
                 mnemonic,
-                AddressingMode::Absolute(u16::from_le_bytes([lower, upper])),
+                AddressingMode::Absolute(u16::from_le_bytes([*lower, *upper])),
             )
         }
         AddressingModeType::AbsoluteIndexedWithX => {
-            let lower = byte_stream.next()?;
-            let upper = byte_stream.next()?;
+            let lower = bytes.get(LOWER_BYTE_OFFSET)?;
+            let upper = bytes.get(UPPER_BYTE_OFFSET)?;
 
             (
                 mnemonic,
-                AddressingMode::AbsoluteIndexedWithX(u16::from_le_bytes([lower, upper])),
+                AddressingMode::AbsoluteIndexedWithX(u16::from_le_bytes([*lower, *upper])),
             )
         }
         AddressingModeType::AbsoluteIndexedWithY => {
-            let lower = byte_stream.next()?;
-            let upper = byte_stream.next()?;
+            let lower = bytes.get(LOWER_BYTE_OFFSET)?;
+            let upper = bytes.get(UPPER_BYTE_OFFSET)?;
 
             (
                 mnemonic,
-                AddressingMode::AbsoluteIndexedWithY(u16::from_le_bytes([lower, upper])),
+                AddressingMode::AbsoluteIndexedWithY(u16::from_le_bytes([*lower, *upper])),
             )
         }
     };
