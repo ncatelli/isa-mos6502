@@ -1,6 +1,6 @@
 [package]
 name = "isa-mos6502"
-version = "1.0.1"
+version = "1.1.0"
 authors = ["Nate Catelli <ncatelli@packetfire.org>"]
 edition = "2018"
 
