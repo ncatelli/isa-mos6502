@@ -1,4 +1,6 @@
+#[cfg(feature = "parcel")]
 extern crate parcel;
+
 use crate::ByteSized;
 
 /// Represents various conversion errors between mnemnoic types.
@@ -19,6 +21,7 @@ macro_rules! generate_mnemonic_parser_and_offset {
     ($mnemonic:ty, $text:literal, $opcode:literal) => {
         impl ByteSized for $mnemonic {}
 
+        #[cfg(feature = "parcel")]
         impl<'a> parcel::Parser<'a, &'a [(usize, u8)], $mnemonic> for $mnemonic {
             fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], $mnemonic> {
                 parcel::map(
@@ -28,6 +31,7 @@ macro_rules! generate_mnemonic_parser_and_offset {
             }
         }
 
+        #[cfg(feature = "parcel")]
         impl<'a> parcel::Parser<'a, &'a [(usize, char)], $mnemonic> for $mnemonic {
             fn parse(&self, input: &'a [(usize, char)]) -> parcel::ParseResult<&'a [(usize, char)], $mnemonic> {
                 parcel::map(
@@ -41,6 +45,7 @@ macro_rules! generate_mnemonic_parser_and_offset {
     ($mnemonic:ty, $text:literal, $( $opcode:literal ),* ) => {
         impl ByteSized for $mnemonic {}
 
+        #[cfg(feature = "parcel")]
         impl<'a> parcel::Parser<'a, &'a [(usize, u8)], $mnemonic> for $mnemonic {
             fn parse(&self, input: &'a [(usize, u8)]) -> parcel::ParseResult<&'a [(usize, u8)], $mnemonic> {
                 parcel::one_of(vec![
@@ -53,6 +58,7 @@ macro_rules! generate_mnemonic_parser_and_offset {
             }
         }
 
+        #[cfg(feature = "parcel")]
         impl<'a> parcel::Parser<'a, &'a [(usize, char)], $mnemonic> for $mnemonic {
             fn parse(&self, input: &'a [(usize, char)]) -> parcel::ParseResult<&'a [(usize, char)], $mnemonic> {
                 parcel::map(

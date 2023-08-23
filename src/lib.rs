@@ -3,6 +3,7 @@
 //! translation between the bytecode and an intermediate representation of the
 //! instruction set.
 
+use std::convert::TryInto;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -39,6 +40,7 @@ pub trait ByteSized {
 }
 
 pub mod addressing_mode;
+pub mod bit_decoder;
 pub mod mnemonic;
 
 type Bytecode = Vec<u8>;
@@ -206,6 +208,7 @@ macro_rules! generate_instructions {
                 }
             }
 
+            #[cfg(feature = "parcel")]
             impl<'a> parcel::Parser<'a, &'a [(usize, u8)], $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>>
                 for $crate::Instruction<$crate::mnemonic::$mnc, $crate::addressing_mode::$am>
             {
@@ -276,15 +279,28 @@ macro_rules! generate_instructions {
         #[cfg(test)]
         mod tests {
             mod parser {
+                #[cfg(feature = "parcel")]
                 use parcel::prelude::v1::Parser;
                 $(
                     #[test]
                     fn $name() {
-                        let bytecode: Vec<(usize, u8)> = [$opcode, 0x00, 0x00].iter().copied().enumerate().collect();
+                        let bytecode = [$opcode, 0x00, 0x00];
+                        let expected = $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default());
+
+                        #[cfg(feature = "parcel")]
+                        let enumerated_bytes: Vec<(usize, u8)> = bytecode.iter().copied().enumerate().collect();
+
+                        #[cfg(feature = "parcel")]
+                        // assert parcel parse matches expected
                         assert_eq!(
-                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()),
-                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()).parse(&bytecode).unwrap().unwrap()
-                        )
+                            expected,
+                            $crate::Instruction::new(<$crate::mnemonic::$mnc>::default(), <$crate::addressing_mode::$am>::default()).parse(&enumerated_bytes).unwrap().unwrap()
+                        );
+
+                        // assert decoded bytes matches parsed bytes;
+                        let decoded = $crate::parse_instruction(&bytecode);
+                        assert_eq!(decoded, Some(expected.into()));
+
                     }
                 )*
             }
@@ -2139,4 +2155,89 @@ impl std::convert::TryFrom<(mnemonic::Mnemonic, addressing_mode::AddressingMode)
             _ => Err(InstructionErr::InvalidInstruction(src.0, src.1.into())),
         }
     }
+}
+
+pub fn parse_instruction(bytes: impl AsRef<[u8]>) -> Option<InstructionVariant> {
+    use addressing_mode::{AddressingMode, AddressingModeType};
+
+    // An instructions little endian lower byte will be first after the opcode.
+    const LOWER_BYTE_OFFSET: usize = 1;
+    // An instructions little endian upper byte will be second after the opcode.
+    const UPPER_BYTE_OFFSET: usize = 2;
+
+    let bytes = bytes.as_ref();
+
+    let opcode = bytes.first().copied().map(bit_decoder::Opcode::from)?;
+    let (mnemonic, am) = bit_decoder::decode(&opcode)?;
+
+    let variant_components = match am {
+        AddressingModeType::Accumulator => (mnemonic, AddressingMode::Accumulator),
+        AddressingModeType::Implied => (mnemonic, AddressingMode::Implied),
+        AddressingModeType::Immediate => {
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::Immediate(*data))
+        }
+        AddressingModeType::ZeroPage => {
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::ZeroPage(*data))
+        }
+        AddressingModeType::Relative => {
+            let data = bytes.get(LOWER_BYTE_OFFSET).map(|&data| data as i8)?;
+            (mnemonic, AddressingMode::Relative(data))
+        }
+        AddressingModeType::ZeroPageIndexedWithX => {
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::ZeroPageIndexedWithX(*data))
+        }
+        AddressingModeType::ZeroPageIndexedWithY => {
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::ZeroPageIndexedWithY(*data))
+        }
+        AddressingModeType::XIndexedIndirect => {
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::XIndexedIndirect(*data))
+        }
+        AddressingModeType::IndirectYIndexed => {
+            let data = bytes.get(LOWER_BYTE_OFFSET)?;
+            (mnemonic, AddressingMode::IndirectYIndexed(*data))
+        }
+        AddressingModeType::Indirect => {
+            let lower = bytes.get(LOWER_BYTE_OFFSET)?;
+            let upper = bytes.get(UPPER_BYTE_OFFSET)?;
+
+            (
+                mnemonic,
+                AddressingMode::Indirect(u16::from_le_bytes([*lower, *upper])),
+            )
+        }
+        AddressingModeType::Absolute => {
+            let lower = bytes.get(LOWER_BYTE_OFFSET)?;
+            let upper = bytes.get(UPPER_BYTE_OFFSET)?;
+
+            (
+                mnemonic,
+                AddressingMode::Absolute(u16::from_le_bytes([*lower, *upper])),
+            )
+        }
+        AddressingModeType::AbsoluteIndexedWithX => {
+            let lower = bytes.get(LOWER_BYTE_OFFSET)?;
+            let upper = bytes.get(UPPER_BYTE_OFFSET)?;
+
+            (
+                mnemonic,
+                AddressingMode::AbsoluteIndexedWithX(u16::from_le_bytes([*lower, *upper])),
+            )
+        }
+        AddressingModeType::AbsoluteIndexedWithY => {
+            let lower = bytes.get(LOWER_BYTE_OFFSET)?;
+            let upper = bytes.get(UPPER_BYTE_OFFSET)?;
+
+            (
+                mnemonic,
+                AddressingMode::AbsoluteIndexedWithY(u16::from_le_bytes([*lower, *upper])),
+            )
+        }
+    };
+
+    variant_components.try_into().ok()
 }
