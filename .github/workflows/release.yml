@@ -1,8 +1,6 @@
 name: Release
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -10,6 +8,7 @@ permissions:
 jobs:
   release:
     name: Release
+    environment: manual-release
     runs-on: ubuntu-latest
     permissions:
       contents: write
